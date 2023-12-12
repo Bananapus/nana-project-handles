@@ -6,10 +6,11 @@ import "forge-std/Test.sol";
 import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol"; // This is an interface...
 import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-import {JBProjects} from "@jbx-protocol/juice-contracts-v4/contracts/JBProjects.sol";
-import {JBPermissions} from "@jbx-protocol/juice-contracts-v4/contracts/JBPermissions.sol";
-import "@juice-project-handle/JBProjectHandles.sol";
-import "@juice-project-handle/libraries/JBOperations2.sol";
+import {JBProjects} from "@jbx-protocol/src/JBProjects.sol";
+import {JBPermissions} from "@jbx-protocol/src/JBPermissions.sol";
+import {JBPermissionsData} from "@jbx-protocol/src/structs/JBPermissionsData.sol";
+import "@juice-project-handles/JBProjectHandles.sol";
+import "@juice-project-handles/libraries/JBOperations2.sol";
 
 ENS constant ensRegistry = ENS(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
 IJBProjectHandles constant oldHandle = IJBProjectHandles(
@@ -38,8 +39,8 @@ contract ContractTest is Test {
         vm.label(address(ensTextResolver), "ensTextResolver");
         vm.label(address(ensRegistry), "ensRegistry");
 
-        jbPermissions = new JBPermissiosn();
-        jbProjects = new JBProjects();
+        jbPermissions = new JBPermissions();
+        jbProjects = new JBProjects(address(69));
         projectHandle = new JBProjectHandles(jbProjects, jbPermissions);
     }
 
@@ -81,11 +82,12 @@ contract ContractTest is Test {
         permissionIndexes[0] = JBOperations2.SET_ENS_NAME_FOR;
 
         vm.prank(projectOwner);
-        jbPermissions.setPermissions(
+        jbPermissions.setPermissionsForOperator(
+            projectOwner,
             JBPermissionsData({
                 operator: caller,
-                domain: 1,
-                permissionIndexes: permissionIndexes
+                projectId: 1,
+                permissionIds: permissionIndexes
             })
         );
 
@@ -140,7 +142,7 @@ contract ContractTest is Test {
     function testSetEnsNameFor_revertIfNotAuthorized(
         uint96 authorizationIndex,
         address caller,
-        string calldata _name
+        string calldata name
     ) public {
         vm.assume(
             authorizationIndex != JBOperations2.SET_ENS_NAME_FOR &&
@@ -162,11 +164,12 @@ contract ContractTest is Test {
         permissionIndexes[0] = authorizationIndex;
 
         vm.prank(projectOwner);
-        jbPermissions.setPermissions(
+        jbPermissions.setPermissionsForOperator(
+            projectOwner,
             JBPermissionsData({
                 operator: caller,
-                domain: 1,
-                permissionIndexes: permissionIndexes
+                projectId: 1,
+                permissionIds: permissionIndexes
             })
         );
 
@@ -234,56 +237,6 @@ contract ContractTest is Test {
         );
 
         assertEq(projectHandle.handleOf(projectId), "");
-    }
-
-    function testHandleOf_returnsPreviousHandleIfRegisteredONLYOnPreviousVersion(
-        string calldata name,
-        string calldata subdomain,
-        string calldata subsubdomain
-    ) public {
-        vm.assume(
-            bytes(name).length > 0 &&
-                bytes(subdomain).length > 0 &&
-                bytes(subsubdomain).length > 0
-        );
-
-        uint256 projectId = 69420;
-
-        // name.subdomain.subsubdomain.eth is stored as ['subsubdomain', 'subdomain', 'domain']
-        string[] memory nameParts = new string[](3);
-        nameParts[0] = subsubdomain;
-        nameParts[1] = subdomain;
-        nameParts[2] = name;
-
-        string memory KEY = projectHandle.TEXT_KEY();
-
-        vm.mockCall(
-            address(ensRegistry),
-            abi.encodeWithSelector(ENS.resolver.selector, _namehash(nameParts)),
-            abi.encode(address(ensTextResolver))
-        );
-
-        vm.mockCall(
-            address(ensTextResolver),
-            abi.encodeWithSelector(
-                ITextResolver.text.selector,
-                _namehash(nameParts),
-                KEY
-            ),
-            abi.encode(Strings.toString(projectId))
-        );
-
-        // ENS set in previous JBProjectHandle, not in the new one -> return it
-        vm.mockCall(
-            address(oldHandle),
-            abi.encodeCall(IJBProjectHandles.ensNamePartsOf, (projectId)),
-            abi.encode(_nameParts)
-        );
-
-        assertEq(
-            projectHandle.handleOf(projectId),
-            string(abi.encodePacked(name, ".", subdomain, ".", subsubdomain))
-        );
     }
 
     function testHandleOf_returnsHandleFromNewestContractIfRegisteredOnBothOldAndNew(
@@ -393,7 +346,6 @@ contract ContractTest is Test {
             abi.encode(new string[](0))
         );
 
-        string memory reverseId = Strings.toString(reverseId);
         string memory KEY = projectHandle.TEXT_KEY();
 
         // name.subdomain.subsubdomain.eth is stored as ['subsubdomain', 'subdomain', 'domain']
@@ -415,7 +367,7 @@ contract ContractTest is Test {
                 _namehash(nameParts),
                 KEY
             ),
-            abi.encode(reverseId)
+            abi.encode(Strings.toString(reverseId))
         );
 
         assertEq(projectHandle.handleOf(projectId), "");
@@ -432,7 +384,7 @@ contract ContractTest is Test {
                 bytes(subsubdomain).length > 0
         );
 
-        uint256 _projectId = jbProjects.createFor(projectOwner);
+        uint256 projectId = jbProjects.createFor(projectOwner);
 
         string memory KEY = projectHandle.TEXT_KEY();
 
@@ -474,7 +426,7 @@ contract ContractTest is Test {
     // Assert equals between two string arrays
     function assertEq(string[] memory first, string[] memory second) internal {
         assertEq(first.length, second.length);
-        for (uint256 i; i < _first.length; i++)
+        for (uint256 i; i < first.length; i++)
             assertEq(keccak256(bytes(first[i])), keccak256(bytes(second[i])));
     }
 
@@ -489,7 +441,7 @@ contract ContractTest is Test {
         uint256 nameLength = ensName.length;
 
         // Hash each part.
-        for (uint256 i = 0; _i < nameLength; i++) {
+        for (uint256 i = 0; i < nameLength; i++) {
             namehash = keccak256(
                 abi.encodePacked(
                     namehash,

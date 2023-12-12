@@ -5,7 +5,9 @@ import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
 import {IERC721} from "@openzeppelin/contracts/interfaces/IERC721.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-import {JBPermissioned} from "@jbx-protocol/juice-contracts-v4/contracts/abstract/JBPermissioned.sol";
+import {JBPermissioned} from "@jbx-protocol/src/abstract/JBPermissioned.sol";
+import {IJBProjects} from "@jbx-protocol/src/interfaces/IJBProjects.sol";
+import {IJBPermissions} from "@jbx-protocol/src/interfaces/IJBPermissions.sol";
 import {IJBProjectHandles} from "./interfaces/IJBProjectHandles.sol";
 import {JBOperations2} from "./libraries/JBOperations2.sol";
 
@@ -39,7 +41,7 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
     //*********************************************************************//
 
     /// @notice A contract which mints ERC-721's that represent project ownership and transfers.
-    IJBProjects public immutable override projects;
+    IJBProjects public immutable override PROJECTS;
 
     /// @notice The ENS registry contract address.
     /// @dev Same on every network
@@ -81,7 +83,7 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
         // Return empty string if text record from ENS name doesn't match projectId.
         if (
             keccak256(bytes(textRecordProjectId)) !=
-            keccak256(bytes(Strings.toString(_projectId)))
+            keccak256(bytes(Strings.toString(projectId)))
         ) return "";
 
         // Format the handle from the name parts.
@@ -107,7 +109,7 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
         IJBProjects projects,
         IJBPermissions permissions
     ) JBPermissioned(permissions) {
-        projects = projects;
+        PROJECTS = projects;
     }
 
     //*********************************************************************//
@@ -125,9 +127,9 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
     ) external override {
         // Enforce permissions.
         _requirePermission({
-            account: projects.ownerOf(projectId),
+            account: PROJECTS.ownerOf(projectId),
             projectId: projectId,
-            permissionIndexes: JBOperations2.SET_ENS_NAME_FOR
+            permissionId: JBOperations2.SET_ENS_NAME_FOR
         });
 
         // Get a reference to the number of parts are in the ENS name.
@@ -137,7 +139,7 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
         if (parts.length == 0) revert NO_PARTS();
 
         // Make sure no provided parts are empty.
-        for (uint256 i = 0; i < _partsLength; i++) {
+        for (uint256 i = 0; i < partsLength; i++) {
             if (bytes(parts[i]).length == 0) revert EMPTY_NAME_PART();
         }
 
@@ -169,7 +171,7 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
         for (uint256 i = 1; i <= partsLength; i++) {
             // Compute the handle.
             handle = string(
-                abi.encodePacked(handle, _ensNameParts[partsLength - i])
+                abi.encodePacked(handle, ensNameParts[partsLength - i])
             );
 
             // Add a dot if this part isn't the last.
@@ -197,7 +199,7 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
             namehash = keccak256(
                 abi.encodePacked(
                     namehash,
-                    keccak256(abi.encodePacked(_ensNameParts[i]))
+                    keccak256(abi.encodePacked(ensNameParts[i]))
                 )
             );
         }
