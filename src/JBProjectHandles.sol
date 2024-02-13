@@ -112,7 +112,7 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
     /// @param parts The parts of the ENS domain to use as the project handle, excluding the trailing .eth.
     function setEnsNamePartsFor(uint256 projectId, string[] memory parts) external override {
         // Enforce permissions.
-        _requirePermission({
+        _requirePermissionFrom({
             account: PROJECTS.ownerOf(projectId),
             projectId: projectId,
             permissionId: JBOperations2.SET_ENS_NAME_FOR

@@ -82,14 +82,14 @@ contract ContractTest is Test {
         permissionIndexes[0] = JBOperations2.SET_ENS_NAME_FOR;
 
         vm.prank(projectOwner);
-        jbPermissions.setPermissionsForOperator(
-            projectOwner,
-            JBPermissionsData({
+        jbPermissions.setPermissionsFor({
+            account: projectOwner,
+            permissionsData: JBPermissionsData({
                 operator: caller,
                 projectId: 1,
                 permissionIds: permissionIndexes
             })
-        );
+        });
 
         string[] memory nameParts = new string[](1);
         nameParts[0] = name;
@@ -164,14 +164,14 @@ contract ContractTest is Test {
         permissionIndexes[0] = authorizationIndex;
 
         vm.prank(projectOwner);
-        jbPermissions.setPermissionsForOperator(
-            projectOwner,
-            JBPermissionsData({
+        jbPermissions.setPermissionsFor({
+            account: projectOwner,
+            permissionsData: JBPermissionsData({
                 operator: caller,
                 projectId: 1,
                 permissionIds: permissionIndexes
             })
-        );
+        });
 
         vm.prank(caller);
         vm.expectRevert(abi.encodeWithSignature("UNAUTHORIZED()"));
