@@ -1,6 +1,27 @@
-.env
 node_modules
+.env
+*.txt
+!remappings.txt
+
+# Foundry
+out
+
+# Hardhat files
 cache
-mnemonic.txt
-pk.txt
-.DS_Store 
+artifacts
+deployments/localhost/**
+
+# Mac OSX
+.DS_Store
+
+# Code coverage reports
+coverage/
+coverage.json
+lcov.info
+
+# VSCode
+workspace.code-workspace
+.vscode/
+
+backup/
+.secret
