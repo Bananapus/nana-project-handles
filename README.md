@@ -1,57 +1,49 @@
 # Juicebox Project Handles
 
-The JBProjectHandles contract manages reverse records that point from JB project IDs to ENS nodes. If the reverse record of a project ID is pointed to an ENS node with a TXT record matching the ID of that project, then the ENS node will be considered the "handle" for that project.
+The `JBProjectHandles` contract manages reverse records that point from Juicebox project IDs to ENS nodes. If the reverse record of a project ID is pointed to an ENS node with a TXT record matching the ID of that project, then the ENS node will be considered the "handle" for that project.
 
-# Install Foundry
+_If you're having trouble understanding this contract, take a look at the [core Juicebox contracts](https://github.com/bananapus/juice-contracts-v4) and the [documentation](https://docs.juicebox.money/) first. If you have questions, reach out on [Discord](https://discord.com/invite/ErQYmth4dS)._
 
-To get set up:
+## Develop
 
-1. Install [Foundry](https://github.com/gakonst/foundry).
+`juice-project-handles` uses [npm](https://www.npmjs.com/) for package management and the [Foundry](https://github.com/foundry-rs/foundry) development toolchain for builds, tests, and deployments. To get set up, [install Node.js](https://nodejs.org/en/download) and install [Foundry](https://github.com/foundry-rs/foundry):
 
 ```bash
 curl -L https://foundry.paradigm.xyz | sh
 ```
 
-2. Install external lib(s)
+You can download and install dependencies with:
 
 ```bash
-git submodule update --init && yarn install
+npm install && forge install
 ```
 
-then run
+If you run into trouble with `forge install`, try using `git submodule update --init --recursive` to ensure that nested submodules have been properly initialized.
+
+Some useful commands:
+
+| Command               | Description                                         |
+| --------------------- | --------------------------------------------------- |
+| `forge build`         | Compile the contracts and write artifacts to `out`. |
+| `forge fmt`           | Lint.                                               |
+| `forge test`          | Run the tests.                                      |
+| `forge build --sizes` | Get contract sizes.                                 |
+| `forge coverage`      | Generate a test coverage report.                    |
+| `foundryup`           | Update foundry. Run this periodically.              |
+| `forge clean`         | Remove the build artifacts and cache directories.   |
+
+To learn more, visit the [Foundry Book](https://book.getfoundry.sh/) docs.
+
+## Utilities
+
+For convenience, several utility commands are available in `util.sh`. To see a list, run:
 
 ```bash
-forge update
+`bash util.sh --help`.
 ```
 
-3. Run tests:
+Or make the script executable and run:
 
 ```bash
-forge test
+./util.sh --help
 ```
-
-4. Update Foundry periodically:
-
-```bash
-foundryup
-```
-
-# Deploy & verify
-
-Using the solidity script after configuring the .env accordingly (the sender address must be corresponding to the private key)
-
-See the [Foundry Book for available options](https://book.getfoundry.sh/reference/forge/forge-create.html)
-
-## Goerli
-
-```bash
-yarn deploy-goerli
-```
-
-## Mainnet
-
-```bash
-yarn deploy-mainnet
-```
-
-The deployments are stored in ./broadcast

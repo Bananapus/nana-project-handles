@@ -1,0 +1,8 @@
+{
+  "name": "juice-project-handles",
+  "version": "0.0.0",
+  "dependencies": {
+    "@ensdomains/ens-contracts": "^1.1.4",
+    "@openzeppelin/contracts": "^5.0.1"
+  }
+}
