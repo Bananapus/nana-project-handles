@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
-import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
-import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
-import {IERC721} from "@openzeppelin/contracts/interfaces/IERC721.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-import {JBPermissioned} from "@juicebox/src/abstract/JBPermissioned.sol";
-import {IJBProjects} from "@juicebox/src/interfaces/IJBProjects.sol";
-import {IJBPermissions} from "@juicebox/src/interfaces/IJBPermissions.sol";
+import {ENS} from "lib/ens-contracts/contracts/registry/ENS.sol";
+import {ITextResolver} from "lib/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
+import {IERC721} from "lib/openzeppelin-contracts/contracts/interfaces/IERC721.sol";
+import {Strings} from "lib/openzeppelin-contracts/contracts/utils/Strings.sol";
+import {JBPermissioned} from "lib/juice-contracts-v4/src/abstract/JBPermissioned.sol";
+import {IJBProjects} from "lib/juice-contracts-v4/src/interfaces/IJBProjects.sol";
+import {IJBPermissions} from "lib/juice-contracts-v4/src/interfaces/IJBPermissions.sol";
 import {IJBProjectHandles} from "./interfaces/IJBProjectHandles.sol";
 import {JBOperations2} from "./libraries/JBOperations2.sol";
 

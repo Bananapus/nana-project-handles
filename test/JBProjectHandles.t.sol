@@ -3,14 +3,14 @@ pragma solidity ^0.8.6;
 
 import "forge-std/Test.sol";
 
-import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol"; // This is an interface...
-import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-import {JBProjects} from "@juicebox/src/JBProjects.sol";
-import {JBPermissions} from "@juicebox/src/JBPermissions.sol";
-import {JBPermissionsData} from "@juicebox/src/structs/JBPermissionsData.sol";
-import "@contracts/JBProjectHandles.sol";
-import "@contracts/libraries/JBOperations2.sol";
+import {ENS} from "lib/ens-contracts/contracts/registry/ENS.sol"; // This is an interface...
+import {ITextResolver} from "lib/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
+import {Strings} from "lib/openzeppelin-contracts/contracts/utils/Strings.sol";
+import {JBProjects} from "lib/juice-contracts-v4/src/JBProjects.sol";
+import {JBPermissions} from "lib/juice-contracts-v4/src/JBPermissions.sol";
+import {JBPermissionsData} from "lib/juice-contracts-v4/src/structs/JBPermissionsData.sol";
+import "src/JBProjectHandles.sol";
+import "src/libraries/JBOperations2.sol";
 
 ENS constant ensRegistry = ENS(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
 IJBProjectHandles constant oldHandle = IJBProjectHandles(
