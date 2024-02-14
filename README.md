@@ -1,57 +1,53 @@
-# Juicebox Project Handles
+# Bananapus Project Handles
 
-The JBProjectHandles contract manages reverse records that point from JB project IDs to ENS nodes. If the reverse record of a project ID is pointed to an ENS node with a TXT record matching the ID of that project, then the ENS node will be considered the "handle" for that project.
+Juicebox projects can use an ENS address as their project's "handle" in frontend clients like [juicebox.money](https://juicebox.money). To make this association, they must first set their `juicebox_project` ENS text record to their project's ID.
 
-# Install Foundry
+This `JBProjectHandles` contract manages reverse records that point from project IDs to ENS nodes. If the two records match, that ENS is considered the project's handle.
 
-To get set up:
+_If you're having trouble understanding this contract, take a look at the [core protocol contracts](https://github.com/Bananapus/nana-core) and the [documentation](https://docs.juicebox.money/) first. If you have questions, reach out on [Discord](https://discord.com/invite/ErQYmth4dS)._
 
-1. Install [Foundry](https://github.com/gakonst/foundry).
+## Install
+
+For `npm` projects (recommended):
+
+```bash
+npm install @bananapus/project-handles
+```
+
+For `forge` projects (not recommended):
+
+```bash
+forge install Bananapus/nana-project-handles
+```
+
+Add `@bananapus/project-handles/=lib/nana-project-handles/` to `remappings.txt`. You'll also need to install `nana-project-handles`'s dependencies and add similar remappings for them.
+
+## Develop
+
+`nana-project-handles` uses [npm](https://www.npmjs.com/) for package management and the [Foundry](https://github.com/foundry-rs/foundry) development toolchain for builds, tests, and deployments. To get set up, [install Node.js](https://nodejs.org/en/download) and install [Foundry](https://github.com/foundry-rs/foundry):
 
 ```bash
 curl -L https://foundry.paradigm.xyz | sh
 ```
 
-2. Install external lib(s)
+You can download and install dependencies with:
 
 ```bash
-git submodule update --init && yarn install
+npm install && forge install
 ```
 
-then run
+If you run into trouble with `forge install`, try using `git submodule update --init --recursive` to ensure that nested submodules have been properly initialized.
 
-```bash
-forge update
-```
+Some useful commands:
 
-3. Run tests:
+| Command               | Description                                         |
+| --------------------- | --------------------------------------------------- |
+| `forge build`         | Compile the contracts and write artifacts to `out`. |
+| `forge fmt`           | Lint.                                               |
+| `forge test`          | Run the tests.                                      |
+| `forge build --sizes` | Get contract sizes.                                 |
+| `forge coverage`      | Generate a test coverage report.                    |
+| `foundryup`           | Update foundry. Run this periodically.              |
+| `forge clean`         | Remove the build artifacts and cache directories.   |
 
-```bash
-forge test
-```
-
-4. Update Foundry periodically:
-
-```bash
-foundryup
-```
-
-# Deploy & verify
-
-Using the solidity script after configuring the .env accordingly (the sender address must be corresponding to the private key)
-
-See the [Foundry Book for available options](https://book.getfoundry.sh/reference/forge/forge-create.html)
-
-## Goerli
-
-```bash
-yarn deploy-goerli
-```
-
-## Mainnet
-
-```bash
-yarn deploy-mainnet
-```
-
-The deployments are stored in ./broadcast
+To learn more, visit the [Foundry Book](https://book.getfoundry.sh/) docs.

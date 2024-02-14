@@ -1,2 +1,0 @@
-ds-test/=lib/forge-std/lib/ds-test/src/
-lib/openzeppelin-contracts/=lib/openzeppelin-contracts/

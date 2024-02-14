@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
-import {ENS} from "lib/ens-contracts/contracts/registry/ENS.sol";
-import {ITextResolver} from "lib/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
-import {IERC721} from "lib/openzeppelin-contracts/contracts/interfaces/IERC721.sol";
-import {Strings} from "lib/openzeppelin-contracts/contracts/utils/Strings.sol";
-import {JBPermissioned} from "lib/juice-contracts-v4/src/abstract/JBPermissioned.sol";
-import {IJBProjects} from "lib/juice-contracts-v4/src/interfaces/IJBProjects.sol";
-import {IJBPermissions} from "lib/juice-contracts-v4/src/interfaces/IJBPermissions.sol";
+import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
+import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
+import {IERC721} from "@openzeppelin/contracts/interfaces/IERC721.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {JBPermissioned} from "@bananapus/core/src/abstract/JBPermissioned.sol";
+import {IJBProjects} from "@bananapus/core/src/interfaces/IJBProjects.sol";
+import {IJBPermissions} from "@bananapus/core/src/interfaces/IJBPermissions.sol";
 import {IJBProjectHandles} from "./interfaces/IJBProjectHandles.sol";
-import {JBOperations2} from "./libraries/JBOperations2.sol";
+import {JBHandlePermissionIds} from "./libraries/JBHandlePermissionIds.sol";
 
 /// @notice Manages reverse records that point from JB project IDs to ENS nodes. If the reverse record of a project ID
 /// is pointed to an ENS node with a TXT record matching the ID of that project, then the ENS node will be considered
@@ -115,7 +115,7 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
         _requirePermissionFrom({
             account: PROJECTS.ownerOf(projectId),
             projectId: projectId,
-            permissionId: JBOperations2.SET_ENS_NAME_FOR
+            permissionId: JBHandlePermissionIds.SET_ENS_NAME_FOR
         });
 
         // Get a reference to the number of parts are in the ENS name.
