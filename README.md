@@ -1,6 +1,8 @@
 # Bananapus Project Handles
 
-The `JBProjectHandles` contract manages reverse records that point from Juicebox project IDs to ENS nodes. If the reverse record of a project ID is pointed to an ENS node with a TXT record matching the ID of that project, then the ENS node will be considered the "handle" for that project.
+Juicebox projects can use an ENS address as their project's "handle" in frontend clients like [juicebox.money](https://juicebox.money). To make this association, they must first set their `juicebox_project` ENS text record to their project's ID.
+
+This `JBProjectHandles` contract manages reverse records that point from project IDs to ENS nodes. If the two records match, that ENS is considered the project's handle.
 
 _If you're having trouble understanding this contract, take a look at the [core protocol contracts](https://github.com/Bananapus/nana-core) and the [documentation](https://docs.juicebox.money/) first. If you have questions, reach out on [Discord](https://discord.com/invite/ErQYmth4dS)._
 
