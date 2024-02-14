@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.16;
 
-import {Script, stdJson} from "lib/forge-std/src/Script.sol";
-import {IJBPermissions} from "lib/juice-contracts-v4/src/interfaces/IJBPermissions.sol";
-import {IJBProjects} from "lib/juice-contracts-v4/src/interfaces/IJBProjects.sol";
+import {Script, stdJson} from "forge-std/Script.sol";
+import {IJBPermissions} from "@bananapus/core/src/interfaces/IJBPermissions.sol";
+import {IJBProjects} from "@bananapus/core/src/interfaces/IJBProjects.sol";
 
-import "../JBProjectHandles.sol";
+import "../src/JBProjectHandles.sol";
 
 contract Deploy is Script {
     function run() public {
@@ -35,11 +35,11 @@ contract Deploy is Script {
         }
 
         address projectAddress = _getDeploymentAddress(
-            string.concat("lib/juice-contracts-v4/broadcast/Deploy.s.sol/", chain, "/run-latest.json"), "JBProjects"
+            string.concat("@bananapus/core/broadcast/Deploy.s.sol/", chain, "/run-latest.json"), "JBProjects"
         );
 
         address permissionsAddress = _getDeploymentAddress(
-            string.concat("lib/juice-contracts-v4/broadcast/Deploy.s.sol/", chain, "/run-latest.json"), "JBPermissions"
+            string.concat("@bananapus/core/broadcast/Deploy.s.sol/", chain, "/run-latest.json"), "JBPermissions"
         );
 
         vm.broadcast();
@@ -68,4 +68,3 @@ contract Deploy is Script {
         revert(string.concat("Could not find contract with name '", contractName, "' in deployment file '", path, "'"));
     }
 }
-
