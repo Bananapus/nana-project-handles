@@ -11,13 +11,13 @@ _If you're having trouble understanding this contract, take a look at the [core 
 For `npm` projects (recommended):
 
 ```bash
-npm install @bananapus/core
+npm install @bananapus/project-handles
 ```
 
 For `forge` projects (not recommended):
 
 ```bash
-forge install Bananapus/nana-core
+forge install Bananapus/nana-project-handles
 ```
 
 Add `@bananapus/project-handles/=lib/nana-project-handles/` to `remappings.txt`. You'll also need to install `nana-project-handles`'s dependencies and add similar remappings for them.
