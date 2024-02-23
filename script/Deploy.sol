@@ -35,11 +35,11 @@ contract Deploy is Script {
         }
 
         address projectAddress = _getDeploymentAddress(
-            string.concat("@bananapus/core/broadcast/Deploy.s.sol/", chain, "/run-latest.json"), "JBProjects"
+            string.concat("node_modules/@bananapus/core/broadcast/Deploy.s.sol/", chain, "/run-latest.json"), "JBProjects"
         );
 
         address permissionsAddress = _getDeploymentAddress(
-            string.concat("@bananapus/core/broadcast/Deploy.s.sol/", chain, "/run-latest.json"), "JBPermissions"
+            string.concat("node_modules/@bananapus/core/broadcast/Deploy.s.sol/", chain, "/run-latest.json"), "JBPermissions"
         );
 
         vm.broadcast();
