@@ -10,7 +10,7 @@ import {JBProjects} from "@bananapus/core/src/JBProjects.sol";
 import {JBPermissions} from "@bananapus/core/src/JBPermissions.sol";
 import {JBPermissionsData} from "@bananapus/core/src/structs/JBPermissionsData.sol";
 import "../src/JBProjectHandles.sol";
-import "../src/libraries/JBHandlePermissionIds.sol";
+import {JBPermissionIds} from "@bananapus/permission-ids/src/JBPermissionIds.sol";
 
 ENS constant ensRegistry = ENS(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
 IJBProjectHandles constant oldHandle = IJBProjectHandles(0x41126eC99F8A989fEB503ac7bB4c5e5D40E06FA4);
@@ -67,7 +67,7 @@ contract ContractTest is Test {
 
         // Give the authorisation to set ENS to caller
         uint256[] memory permissionIndexes = new uint256[](1);
-        permissionIndexes[0] = JBHandlePermissionIds.SET_ENS_NAME_FOR;
+        permissionIndexes[0] = JBPermissionIds.SET_ENS_NAME_FOR;
 
         vm.prank(projectOwner);
         jbPermissions.setPermissionsFor({
@@ -126,7 +126,7 @@ contract ContractTest is Test {
     )
         public
     {
-        vm.assume(authorizationIndex != JBHandlePermissionIds.SET_ENS_NAME_FOR && authorizationIndex < 255);
+        vm.assume(authorizationIndex != JBPermissionIds.SET_ENS_NAME_FOR && authorizationIndex < 255);
         vm.assume(caller != projectOwner);
         uint256 projectId = jbProjects.createFor(projectOwner);
 
