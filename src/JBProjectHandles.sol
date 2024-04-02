@@ -31,7 +31,8 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
 
     /// @notice The ENS registry contract address.
     /// @dev Same on every network
-    ENS public constant ENS_REGISTRY = ENS(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
+    ENS public constant ENS_REGISTRY =
+        ENS(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
 
     //*********************************************************************//
     // --------------- public immutable stored properties ---------------- //
@@ -58,7 +59,9 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
     /// previous version, try to retrieve it too (this version takes precedence on the previous version).
     /// @param projectId The ID of the project to get the handle of.
     /// @return handle The project's handle.
-    function handleOf(uint256 projectId) external view override returns (string memory) {
+    function handleOf(
+        uint256 projectId
+    ) external view override returns (string memory) {
         // Get a reference to the project's ENS name parts.
         string[] memory ensNameParts = _ensNamePartsOf[projectId];
 
@@ -75,10 +78,16 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
         if (textResolver == address(0)) return "";
 
         // Find the projectId that the text record of the ENS name is mapped to.
-        string memory textRecordProjectId = ITextResolver(textResolver).text(hashedName, TEXT_KEY);
+        string memory textRecordProjectId = ITextResolver(textResolver).text(
+            hashedName,
+            TEXT_KEY
+        );
 
         // Return empty string if text record from ENS name doesn't match projectId.
-        if (keccak256(bytes(textRecordProjectId)) != keccak256(bytes(Strings.toString(projectId)))) return "";
+        if (
+            keccak256(bytes(textRecordProjectId)) !=
+            keccak256(bytes(Strings.toString(projectId)))
+        ) return "";
 
         // Format the handle from the name parts.
         return _formatHandle(ensNameParts);
@@ -87,7 +96,9 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
     /// @notice The parts of the stored ENS name of a project.
     /// @param projectId The ID of the project to get the ENS name of.
     /// @return The parts of the ENS name parts of a project.
-    function ensNamePartsOf(uint256 projectId) external view override returns (string[] memory) {
+    function ensNamePartsOf(
+        uint256 projectId
+    ) external view override returns (string[] memory) {
         return _ensNamePartsOf[projectId];
     }
 
@@ -97,7 +108,10 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
 
     /// @param projects A contract which mints ERC-721's that represent project ownership and transfers.
     /// @param permissions A contract storing permissions.
-    constructor(IJBProjects projects, IJBPermissions permissions) JBPermissioned(permissions) {
+    constructor(
+        IJBProjects projects,
+        IJBPermissions permissions
+    ) JBPermissioned(permissions) {
         PROJECTS = projects;
     }
 
@@ -110,12 +124,15 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
     /// @dev Only a project's owner or a designated operator can set its ENS name parts.
     /// @param projectId The ID of the project to set an ENS handle for.
     /// @param parts The parts of the ENS domain to use as the project handle, excluding the trailing .eth.
-    function setEnsNamePartsFor(uint256 projectId, string[] memory parts) external override {
+    function setEnsNamePartsFor(
+        uint256 projectId,
+        string[] memory parts
+    ) external override {
         // Enforce permissions.
         _requirePermissionFrom({
             account: PROJECTS.ownerOf(projectId),
             projectId: projectId,
-            permissionId: JBPermissionIds.SET_ENS_NAME_FOR
+            permissionId: JBPermissionIds.SET_ENS_NAME
         });
 
         // Get a reference to the number of parts are in the ENS name.
@@ -132,7 +149,12 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
         // Store the parts.
         _ensNamePartsOf[projectId] = parts;
 
-        emit SetEnsNameParts(projectId, _formatHandle(parts), parts, msg.sender);
+        emit SetEnsNameParts(
+            projectId,
+            _formatHandle(parts),
+            parts,
+            msg.sender
+        );
     }
 
     //*********************************************************************//
@@ -142,14 +164,18 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
     /// @notice Formats ENS name parts into a handle.
     /// @param ensNameParts The ENS name parts to format into a handle.
     /// @return handle The formatted ENS handle.
-    function _formatHandle(string[] memory ensNameParts) internal pure returns (string memory handle) {
+    function _formatHandle(
+        string[] memory ensNameParts
+    ) internal pure returns (string memory handle) {
         // Get a reference to the number of parts are in the ENS name.
         uint256 partsLength = ensNameParts.length;
 
         // Concatenate each name part.
         for (uint256 i = 1; i <= partsLength; i++) {
             // Compute the handle.
-            handle = string(abi.encodePacked(handle, ensNameParts[partsLength - i]));
+            handle = string(
+                abi.encodePacked(handle, ensNameParts[partsLength - i])
+            );
 
             // Add a dot if this part isn't the last.
             if (i < partsLength) handle = string(abi.encodePacked(handle, "."));
@@ -160,16 +186,25 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
     /// @dev See https://eips.ethereum.org/EIPS/eip-137.
     /// @param ensNameParts The parts of an ENS name to hash.
     /// @return namehash The namehash for an ENS name parts.
-    function _namehash(string[] memory ensNameParts) internal pure returns (bytes32 namehash) {
+    function _namehash(
+        string[] memory ensNameParts
+    ) internal pure returns (bytes32 namehash) {
         // Hash the trailing "eth" suffix.
-        namehash = keccak256(abi.encodePacked(namehash, keccak256(abi.encodePacked("eth"))));
+        namehash = keccak256(
+            abi.encodePacked(namehash, keccak256(abi.encodePacked("eth")))
+        );
 
         // Get a reference to the number of parts are in the ENS name.
         uint256 nameLength = ensNameParts.length;
 
         // Hash each part.
         for (uint256 i = 0; i < nameLength; i++) {
-            namehash = keccak256(abi.encodePacked(namehash, keccak256(abi.encodePacked(ensNameParts[i]))));
+            namehash = keccak256(
+                abi.encodePacked(
+                    namehash,
+                    keccak256(abi.encodePacked(ensNameParts[i]))
+                )
+            );
         }
     }
 }
