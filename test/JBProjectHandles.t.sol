@@ -67,7 +67,7 @@ contract ContractTest is Test {
 
         // Give the authorisation to set ENS to caller
         uint256[] memory permissionIndexes = new uint256[](1);
-        permissionIndexes[0] = JBPermissionIds.SET_ENS_NAME_FOR;
+        permissionIndexes[0] = JBPermissionIds.SET_ENS_NAME;
 
         vm.prank(projectOwner);
         jbPermissions.setPermissionsFor({
@@ -126,7 +126,7 @@ contract ContractTest is Test {
     )
         public
     {
-        vm.assume(authorizationIndex != JBPermissionIds.SET_ENS_NAME_FOR && authorizationIndex < 255);
+        vm.assume(authorizationIndex != JBPermissionIds.SET_ENS_NAME && authorizationIndex < 255);
         vm.assume(caller != projectOwner);
         uint256 projectId = jbProjects.createFor(projectOwner);
 

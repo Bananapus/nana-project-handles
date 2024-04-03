@@ -115,7 +115,7 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
         _requirePermissionFrom({
             account: PROJECTS.ownerOf(projectId),
             projectId: projectId,
-            permissionId: JBPermissionIds.SET_ENS_NAME_FOR
+            permissionId: JBPermissionIds.SET_ENS_NAME
         });
 
         // Get a reference to the number of parts are in the ENS name.
