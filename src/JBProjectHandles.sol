@@ -32,13 +32,6 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
     ENS public constant ENS_REGISTRY = ENS(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
 
     //*********************************************************************//
-    // --------------- public immutable stored properties ---------------- //
-    //*********************************************************************//
-
-    /// @notice A contract which mints ERC-721's that represent project ownership and transfers.
-    IJBProjects public immutable override PROJECTS;
-
-    //*********************************************************************//
     // --------------------- private stored properties ------------------- //
     //*********************************************************************//
 
@@ -121,11 +114,8 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
     // ---------------------------- constructor -------------------------- //
     //*********************************************************************//
 
-    /// @param projects A contract which mints ERC-721's that represent project ownership and transfers.
     /// @param trustedForwarder The trusted forwarder for the ERC2771Context.
-    constructor(IJBProjects projects, address trustedForwarder) ERC2771Context(trustedForwarder) {
-        PROJECTS = projects;
-    }
+    constructor(address trustedForwarder) ERC2771Context(trustedForwarder) {}
 
     //*********************************************************************//
     // --------------------- external transactions ----------------------- //

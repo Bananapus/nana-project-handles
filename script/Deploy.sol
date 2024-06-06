@@ -39,7 +39,7 @@ contract Deploy is Script {
         );
 
         vm.broadcast();
-        new JBProjectHandles(IJBProjects(projectAddress), address(0x0));
+        new JBProjectHandles(address(0x0));
     }
 
     /// @notice Get the address of a contract that was deployed by the Deploy script.
