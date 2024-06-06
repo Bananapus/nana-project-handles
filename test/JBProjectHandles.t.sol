@@ -195,7 +195,7 @@ contract ContractTest is Test {
         uint256 projectId = jbProjects.createFor(projectOwner);
         uint256 chainId = 1;
 
-        string memory KEY = projectHandle.TEXT_KEY();
+        string memory KEY = projectHandle.TEXT_KEY_PREFIX();
 
         // name.subdomain.subsubdomain.eth is stored as ['subsubdomain', 'subdomain', 'domain']
         string[] memory nameParts = new string[](3);
@@ -310,7 +310,7 @@ contract ContractTest is Test {
             abi.encode(new string[](0))
         );
 
-        string memory KEY = projectHandle.TEXT_KEY();
+        string memory KEY = projectHandle.TEXT_KEY_PREFIX();
 
         // name.subdomain.subsubdomain.eth is stored as ['subsubdomain', 'subdomain', 'domain']
         string[] memory nameParts = new string[](3);
@@ -351,7 +351,7 @@ contract ContractTest is Test {
         uint256 projectId = jbProjects.createFor(projectOwner);
         uint256 chainId = 1;
 
-        string memory KEY = projectHandle.TEXT_KEY();
+        string memory KEY = projectHandle.TEXT_KEY_PREFIX();
 
         // name.subdomain.subsubdomain.eth is stored as ['subsubdomain', 'subdomain', 'domain']
         string[] memory nameParts = new string[](3);
