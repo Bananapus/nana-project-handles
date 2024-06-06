@@ -13,18 +13,11 @@ import "../src/JBProjectHandles.sol";
 import {JBPermissionIds} from "@bananapus/permission-ids/src/JBPermissionIds.sol";
 
 ENS constant ensRegistry = ENS(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
-IJBProjectHandles constant oldHandle = IJBProjectHandles(
-    0x41126eC99F8A989fEB503ac7bB4c5e5D40E06FA4
-);
+IJBProjectHandles constant oldHandle = IJBProjectHandles(0x41126eC99F8A989fEB503ac7bB4c5e5D40E06FA4);
 
 contract ContractTest is Test {
     // For testing the event emitted
-    event SetEnsNameParts(
-        uint256 indexed projectId,
-        string indexed ensName,
-        string[] parts,
-        address caller
-    );
+    event SetEnsNameParts(uint256 indexed projectId, string indexed ensName, string[] parts, address caller);
 
     address projectOwner = address(6_942_069);
 
@@ -48,9 +41,7 @@ contract ContractTest is Test {
     // ------------------------ SetEnsNamePartsFor(..) ------------------- //
     //*********************************************************************//
 
-    function testSetEnsNamePartsFor_passIfCallerIsProjectOwnerAndOnlyName(
-        string calldata name
-    ) public {
+    function testSetEnsNamePartsFor_passIfCallerIsProjectOwnerAndOnlyName(string calldata name) public {
         vm.assume(bytes(name).length != 0);
 
         uint256 projectId = jbProjects.createFor(projectOwner);
@@ -67,22 +58,17 @@ contract ContractTest is Test {
         projectHandle.setEnsNamePartsFor(chainId, projectId, nameParts);
 
         // Control: correct ENS name?
-        assertEq(
-            projectHandle.ensNamePartsOf(chainId, projectId, projectOwner),
-            nameParts
-        );
+        assertEq(projectHandle.ensNamePartsOf(chainId, projectId, projectOwner), nameParts);
     }
 
     function testSetEnsNameWithSubdomainFor_passIfMultipleSubdomainLevels(
         string memory name,
         string memory subdomain,
         string memory subsubdomain
-    ) public {
-        vm.assume(
-            bytes(name).length > 0 &&
-                bytes(subdomain).length > 0 &&
-                bytes(subsubdomain).length > 0
-        );
+    )
+        public
+    {
+        vm.assume(bytes(name).length > 0 && bytes(subdomain).length > 0 && bytes(subsubdomain).length > 0);
 
         uint256 projectId = jbProjects.createFor(projectOwner);
         uint256 chainId = 1;
@@ -93,9 +79,7 @@ contract ContractTest is Test {
         nameParts[1] = subdomain;
         nameParts[2] = name;
 
-        string memory fullName = string(
-            abi.encodePacked(name, ".", subdomain, ".", subsubdomain)
-        );
+        string memory fullName = string(abi.encodePacked(name, ".", subdomain, ".", subsubdomain));
 
         // Test event
         vm.expectEmit(true, true, true, true);
@@ -105,22 +89,17 @@ contract ContractTest is Test {
         projectHandle.setEnsNamePartsFor(chainId, projectId, nameParts);
 
         // Control: ENS has correct name and domain
-        assertEq(
-            projectHandle.ensNamePartsOf(chainId, projectId, projectOwner),
-            nameParts
-        );
+        assertEq(projectHandle.ensNamePartsOf(chainId, projectId, projectOwner), nameParts);
     }
 
     function testSetEnsNameWithSubdomainFor_RevertIfEmptyElementInNameParts(
         string memory name,
         string memory subdomain,
         string memory subsubdomain
-    ) public {
-        vm.assume(
-            bytes(name).length == 0 ||
-                bytes(subdomain).length == 0 ||
-                bytes(subsubdomain).length == 0
-        );
+    )
+        public
+    {
+        vm.assume(bytes(name).length == 0 || bytes(subdomain).length == 0 || bytes(subsubdomain).length == 0);
 
         uint256 projectId = jbProjects.createFor(projectOwner);
         uint256 chainId = 1;
@@ -136,10 +115,7 @@ contract ContractTest is Test {
         projectHandle.setEnsNamePartsFor(chainId, projectId, nameParts);
 
         // Control: ENS has correct name and domain
-        assertEq(
-            projectHandle.ensNamePartsOf(chainId, projectId, projectOwner),
-            new string[](0)
-        );
+        assertEq(projectHandle.ensNamePartsOf(chainId, projectId, projectOwner), new string[](0));
     }
 
     function testSetEnsNameWithSubdomainFor_RevertIfEmptyNameParts() public {
@@ -154,27 +130,18 @@ contract ContractTest is Test {
         projectHandle.setEnsNamePartsFor(chainId, projectId, nameParts);
 
         // Control: ENS has correct name and domain
-        assertEq(
-            projectHandle.ensNamePartsOf(chainId, projectId, projectOwner),
-            new string[](0)
-        );
+        assertEq(projectHandle.ensNamePartsOf(chainId, projectId, projectOwner), new string[](0));
     }
 
     //*********************************************************************//
     // ---------------------------- handleOf(..) ------------------------- //
     //*********************************************************************//
 
-    function testHandleOf_returnsEmptyStringIfNoHandleSet(
-        uint256 chainId,
-        uint256 projectId
-    ) public {
+    function testHandleOf_returnsEmptyStringIfNoHandleSet(uint256 chainId, uint256 projectId) public {
         // No handle set on the previous JBProjectHandle version neither
         vm.mockCall(
             address(oldHandle),
-            abi.encodeCall(
-                IJBProjectHandles.ensNamePartsOf,
-                (chainId, projectId, projectOwner)
-            ),
+            abi.encodeCall(IJBProjectHandles.ensNamePartsOf, (chainId, projectId, projectOwner)),
             abi.encode(new string[](0))
         );
 
@@ -185,12 +152,10 @@ contract ContractTest is Test {
         string calldata name,
         string calldata subdomain,
         string calldata subsubdomain
-    ) public {
-        vm.assume(
-            bytes(name).length > 0 &&
-                bytes(subdomain).length > 0 &&
-                bytes(subsubdomain).length > 0
-        );
+    )
+        public
+    {
+        vm.assume(bytes(name).length > 0 && bytes(subdomain).length > 0 && bytes(subsubdomain).length > 0);
 
         uint256 projectId = jbProjects.createFor(projectOwner);
         uint256 chainId = 1;
@@ -220,11 +185,7 @@ contract ContractTest is Test {
 
         vm.mockCall(
             address(ensTextResolver),
-            abi.encodeWithSelector(
-                ITextResolver.text.selector,
-                _namehash(nameParts),
-                KEY
-            ),
+            abi.encodeWithSelector(ITextResolver.text.selector, _namehash(nameParts), KEY),
             abi.encode(
                 string.concat(
                     Strings.toString(chainId),
@@ -239,10 +200,7 @@ contract ContractTest is Test {
         // Mock the registration on the previous version
         vm.mockCall(
             address(oldHandle),
-            abi.encodeCall(
-                IJBProjectHandles.ensNamePartsOf,
-                (chainId, projectId, projectOwner)
-            ),
+            abi.encodeCall(IJBProjectHandles.ensNamePartsOf, (chainId, projectId, projectOwner)),
             abi.encode(oldNamePart)
         );
 
@@ -260,16 +218,15 @@ contract ContractTest is Test {
         string calldata name,
         string calldata subdomain,
         string calldata subsubdomain
-    ) public {
+    )
+        public
+    {
         vm.assume(projectId != reverseId);
 
         // No handle set on the previous JBProjectHandle version
         vm.mockCall(
             address(oldHandle),
-            abi.encodeCall(
-                IJBProjectHandles.ensNamePartsOf,
-                (chainId, projectId, projectOwner)
-            ),
+            abi.encodeCall(IJBProjectHandles.ensNamePartsOf, (chainId, projectId, projectOwner)),
             abi.encode(new string[](0))
         );
 
@@ -295,16 +252,15 @@ contract ContractTest is Test {
         string calldata name,
         string calldata subdomain,
         string calldata subsubdomain
-    ) public {
+    )
+        public
+    {
         vm.assume(projectId != reverseId);
 
         // No handle set on the previous JBProjectHandle version
         vm.mockCall(
             address(oldHandle),
-            abi.encodeCall(
-                IJBProjectHandles.ensNamePartsOf,
-                (chainId, projectId, projectOwner)
-            ),
+            abi.encodeCall(IJBProjectHandles.ensNamePartsOf, (chainId, projectId, projectOwner)),
             abi.encode(new string[](0))
         );
 
@@ -324,11 +280,7 @@ contract ContractTest is Test {
 
         vm.mockCall(
             address(ensTextResolver),
-            abi.encodeWithSelector(
-                ITextResolver.text.selector,
-                _namehash(nameParts),
-                KEY
-            ),
+            abi.encodeWithSelector(ITextResolver.text.selector, _namehash(nameParts), KEY),
             abi.encode(Strings.toString(reverseId))
         );
 
@@ -339,12 +291,10 @@ contract ContractTest is Test {
         string calldata name,
         string calldata subdomain,
         string calldata subsubdomain
-    ) public {
-        vm.assume(
-            bytes(name).length > 0 &&
-                bytes(subdomain).length > 0 &&
-                bytes(subsubdomain).length > 0
-        );
+    )
+        public
+    {
+        vm.assume(bytes(name).length > 0 && bytes(subdomain).length > 0 && bytes(subsubdomain).length > 0);
 
         uint256 projectId = jbProjects.createFor(projectOwner);
         uint256 chainId = 1;
@@ -368,11 +318,7 @@ contract ContractTest is Test {
 
         vm.mockCall(
             address(ensTextResolver),
-            abi.encodeWithSelector(
-                ITextResolver.text.selector,
-                _namehash(nameParts),
-                KEY
-            ),
+            abi.encodeWithSelector(ITextResolver.text.selector, _namehash(nameParts), KEY),
             abi.encode(
                 string.concat(
                     Strings.toString(chainId),
@@ -402,24 +348,15 @@ contract ContractTest is Test {
         }
     }
 
-    function _namehash(
-        string[] memory ensName
-    ) internal pure returns (bytes32 namehash) {
-        namehash = keccak256(
-            abi.encodePacked(namehash, keccak256(abi.encodePacked("eth")))
-        );
+    function _namehash(string[] memory ensName) internal pure returns (bytes32 namehash) {
+        namehash = keccak256(abi.encodePacked(namehash, keccak256(abi.encodePacked("eth"))));
 
         // Get a reference to the number of parts are in the ENS name.
         uint256 nameLength = ensName.length;
 
         // Hash each part.
         for (uint256 i = 0; i < nameLength; i++) {
-            namehash = keccak256(
-                abi.encodePacked(
-                    namehash,
-                    keccak256(abi.encodePacked(ensName[i]))
-                )
-            );
+            namehash = keccak256(abi.encodePacked(namehash, keccak256(abi.encodePacked(ensName[i]))));
         }
     }
 }
