@@ -5,16 +5,14 @@ import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
 import {IERC721} from "@openzeppelin/contracts/interfaces/IERC721.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
-import {JBPermissioned} from "@bananapus/core/src/abstract/JBPermissioned.sol";
+import {ERC2771Context} from "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import {IJBProjects} from "@bananapus/core/src/interfaces/IJBProjects.sol";
-import {IJBPermissions} from "@bananapus/core/src/interfaces/IJBPermissions.sol";
 import {IJBProjectHandles} from "./interfaces/IJBProjectHandles.sol";
-import {JBPermissionIds} from "@bananapus/permission-ids/src/JBPermissionIds.sol";
 
 /// @notice Manages reverse records that point from JB project IDs to ENS nodes. If the reverse record of a project ID
 /// is pointed to an ENS node with a TXT record matching the ID of that project, then the ENS node will be considered
 /// the "handle" for that project.
-contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
+contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
     //*********************************************************************//
     // --------------------------- custom errors ------------------------- //
     //*********************************************************************//
@@ -46,8 +44,11 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
 
     /// @notice Mapping of project ID to an array of strings that make up an ENS name and its subdomains.
     /// @dev ["jbx", "dao", "foo"] represents foo.dao.jbx.eth.
+    /// @custom:param chainId The chain ID of the network on which the project ID exists.
     /// @custom:param projectId The ID of the project to get an ENS name for.
-    mapping(uint256 projectId => string[] ensParts) private _ensNamePartsOf;
+    /// @custom:param projectOwner The address of the project's owner.
+    mapping(uint256 chainId => mapping(uint256 projectId => mapping(address projectOwner => string[] ensParts))) private
+        _ensNamePartsOf;
 
     //*********************************************************************//
     // ------------------------- external views -------------------------- //
@@ -56,11 +57,22 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
     /// @notice Returns the handle for a project.
     /// @dev Requires a TXT record for the `TEXT_KEY` that matches the `projectId`. As some handles were set in the
     /// previous version, try to retrieve it too (this version takes precedence on the previous version).
+    /// @param chainId The chain ID of the network on which the project ID exists.
     /// @param projectId The ID of the project to get the handle of.
+    /// @param projectOwner The address of the project's owner.
     /// @return handle The project's handle.
-    function handleOf(uint256 projectId) external view override returns (string memory) {
+    function handleOf(
+        uint256 chainId,
+        uint256 projectId,
+        address projectOwner
+    )
+        external
+        view
+        override
+        returns (string memory)
+    {
         // Get a reference to the project's ENS name parts.
-        string[] memory ensNameParts = _ensNamePartsOf[projectId];
+        string[] memory ensNameParts = _ensNamePartsOf[chainId][projectId][projectOwner];
 
         // Return an empty string if not found.
         if (ensNameParts.length == 0) return "";
@@ -75,20 +87,39 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
         if (textResolver == address(0)) return "";
 
         // Find the projectId that the text record of the ENS name is mapped to.
-        string memory textRecordProjectId = ITextResolver(textResolver).text(hashedName, TEXT_KEY);
+        string memory textRecordProjectId =
+            ITextResolver(textResolver).text(hashedName, string.concat(TEXT_KEY, ":projectId"));
 
-        // Return empty string if text record from ENS name doesn't match projectId.
-        if (keccak256(bytes(textRecordProjectId)) != keccak256(bytes(Strings.toString(projectId)))) return "";
+        // Find the chainId that the text record of the ENS name is mapped to.
+        string memory textRecordChainId =
+            ITextResolver(textResolver).text(hashedName, string.concat(TEXT_KEY, ":chainId"));
+
+        // Return empty string if text record from ENS name doesn't match projectId or chainId.
+        if (
+            keccak256(bytes(textRecordProjectId)) != keccak256(bytes(Strings.toString(projectId)))
+                || keccak256(bytes(textRecordChainId)) != keccak256(bytes(Strings.toString(chainId)))
+        ) return "";
 
         // Format the handle from the name parts.
         return _formatHandle(ensNameParts);
     }
 
     /// @notice The parts of the stored ENS name of a project.
+    /// @param chainId The chain ID of the network on which the project ID exists.
     /// @param projectId The ID of the project to get the ENS name of.
+    /// @param projectOwner The address of the project's owner.
     /// @return The parts of the ENS name parts of a project.
-    function ensNamePartsOf(uint256 projectId) external view override returns (string[] memory) {
-        return _ensNamePartsOf[projectId];
+    function ensNamePartsOf(
+        uint256 chainId,
+        uint256 projectId,
+        address projectOwner
+    )
+        external
+        view
+        override
+        returns (string[] memory)
+    {
+        return _ensNamePartsOf[chainId][projectId][projectOwner];
     }
 
     //*********************************************************************//
@@ -96,8 +127,8 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
     //*********************************************************************//
 
     /// @param projects A contract which mints ERC-721's that represent project ownership and transfers.
-    /// @param permissions A contract storing permissions.
-    constructor(IJBProjects projects, IJBPermissions permissions) JBPermissioned(permissions) {
+    /// @param trustedForwarder The trusted forwarder for the ERC2771Context.
+    constructor(IJBProjects projects, address trustedForwarder) ERC2771Context(trustedForwarder) {
         PROJECTS = projects;
     }
 
@@ -108,16 +139,10 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
     /// @notice Associate an ENS name with a project.
     /// @dev ["jbx", "dao", "foo"] represents foo.dao.jbx.eth.
     /// @dev Only a project's owner or a designated operator can set its ENS name parts.
+    /// @param chainId The chain ID of the network on which the project ID exists.
     /// @param projectId The ID of the project to set an ENS handle for.
     /// @param parts The parts of the ENS domain to use as the project handle, excluding the trailing .eth.
-    function setEnsNamePartsFor(uint256 projectId, string[] memory parts) external override {
-        // Enforce permissions.
-        _requirePermissionFrom({
-            account: PROJECTS.ownerOf(projectId),
-            projectId: projectId,
-            permissionId: JBPermissionIds.SET_ENS_NAME
-        });
-
+    function setEnsNamePartsFor(uint256 chainId, uint256 projectId, string[] memory parts) external override {
         // Get a reference to the number of parts are in the ENS name.
         uint256 partsLength = parts.length;
 
@@ -125,14 +150,14 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
         if (partsLength == 0) revert NO_PARTS();
 
         // Make sure no provided parts are empty.
-        for (uint256 i = 0; i < partsLength; i++) {
+        for (uint256 i; i < partsLength; i++) {
             if (bytes(parts[i]).length == 0) revert EMPTY_NAME_PART();
         }
 
         // Store the parts.
-        _ensNamePartsOf[projectId] = parts;
+        _ensNamePartsOf[chainId][projectId][_msgSender()] = parts;
 
-        emit SetEnsNameParts(projectId, _formatHandle(parts), parts, msg.sender);
+        emit SetEnsNameParts(projectId, _formatHandle(parts), parts, _msgSender());
     }
 
     //*********************************************************************//
@@ -168,8 +193,25 @@ contract JBProjectHandles is IJBProjectHandles, JBPermissioned {
         uint256 nameLength = ensNameParts.length;
 
         // Hash each part.
-        for (uint256 i = 0; i < nameLength; i++) {
+        for (uint256 i; i < nameLength; i++) {
             namehash = keccak256(abi.encodePacked(namehash, keccak256(abi.encodePacked(ensNameParts[i]))));
         }
+    }
+
+    /// @notice Returns the sender, prefered to use over `msg.sender`
+    /// @return sender the sender address of this call.
+    function _msgSender() internal view override returns (address sender) {
+        return ERC2771Context._msgSender();
+    }
+
+    /// @notice Returns the calldata, prefered to use over `msg.data`
+    /// @return calldata the `msg.data` of this call
+    function _msgData() internal view override returns (bytes calldata) {
+        return ERC2771Context._msgData();
+    }
+
+    /// @dev ERC-2771 specifies the context as being a single address (20 bytes).
+    function _contextSuffixLength() internal view virtual override returns (uint256) {
+        return super._contextSuffixLength();
     }
 }
