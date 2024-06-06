@@ -1,6 +1,6 @@
 # Bananapus Project Handles
 
-Juicebox projects can use an ENS address as their project's "handle" in frontend clients like [juicebox.money](https://juicebox.money). To make this association, they must first set their `juicebox_project` ENS text record to their project's ID.
+Juicebox projects can use an ENS address as their project's "handle" in frontend clients like [juicebox.money](https://juicebox.money). To make this association, they must first set their `juicebox` ENS text record to their project's ID.
 
 This `JBProjectHandles` contract manages reverse records that point from project IDs to ENS nodes. If the two records match, that ENS is considered the project's handle.
 
