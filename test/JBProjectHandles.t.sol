@@ -186,15 +186,7 @@ contract ContractTest is Test {
         vm.mockCall(
             address(ensTextResolver),
             abi.encodeWithSelector(ITextResolver.text.selector, _namehash(nameParts), KEY),
-            abi.encode(
-                string.concat(
-                    Strings.toString(chainId),
-                    ":",
-                    Strings.toString(projectId),
-                    ":",
-                    Strings.toHexString(uint256(uint160(projectOwner)))
-                )
-            )
+            abi.encode(string.concat(Strings.toString(chainId), ":", Strings.toString(projectId)))
         );
 
         // Mock the registration on the previous version
@@ -319,15 +311,7 @@ contract ContractTest is Test {
         vm.mockCall(
             address(ensTextResolver),
             abi.encodeWithSelector(ITextResolver.text.selector, _namehash(nameParts), KEY),
-            abi.encode(
-                string.concat(
-                    Strings.toString(chainId),
-                    ":",
-                    Strings.toString(projectId),
-                    ":",
-                    Strings.toHexString(uint256(uint160(projectOwner)))
-                )
-            )
+            abi.encode(string.concat(Strings.toString(chainId), ":", Strings.toString(projectId)))
         );
 
         assertEq(

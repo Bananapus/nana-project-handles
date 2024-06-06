@@ -92,17 +92,7 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
         // Return empty string if text record from ENS name doesn't match projectId or chainId.
         if (
             keccak256(bytes(textRecord))
-                != keccak256(
-                    bytes(
-                        string.concat(
-                            Strings.toString(chainId),
-                            ":",
-                            Strings.toString(projectId),
-                            ":",
-                            Strings.toHexString(uint256(uint160(projectOwner)))
-                        )
-                    )
-                )
+                != keccak256(bytes(string.concat(Strings.toString(chainId), ":", Strings.toString(projectId))))
         ) return "";
 
         // Format the handle from the name parts.
