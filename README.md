@@ -17,6 +17,7 @@ Juicebox projects can use an ENS address as their project's "handle" in frontend
     <li><a href="#description">Description</a></li>
   <ul>
     <li><a href="#motivation">Motivation</a></li>
+    <li><a href="#reading-handles">Reading Handles</a></li>
     <li><a href="#text-record-and-multichain">Text Record and Multichain</a></li>
     </ul>
     <li><a href="#example-usage">Example Usage</a></li>
@@ -142,6 +143,12 @@ nana-project-handles/
 
 Handles are easier to remember than IDs, but leaving this to clients could get messy. ENS names are often used as handles in the Ethereum ecosystem, because they can have _text records_ – arbitrary key-value text pairs which can be accessed onchain. If Juicebox frontend clients were to trust ENS text records alone as a source of truth, anyone could associate their ENS handle with any Juicebox project, and could use this to mislead others. Therefore, we need a two-way association between Juicebox projects and ENS names. The `JBProjectHandles` contract is the "reverse record" – it allows a Juicebox project's owner to associate their project with an ENS name. If an ENS name has a text record pointing to a Juicebox project, and the project points to that ENS name through the `JBProjectHandles` contract, the ENS name is the project's handle.
 
+### Reading Handles
+
+Clients can use [`JBProjectHandles.handleOf(…)`](https://github.com/Bananapus/nana-project-handles/blob/main/src/JBProjectHandles.sol#L61) to check a project's handle. The function only returns the handle if it is verified, and returns an empty string otherwise.
+
+`JBProjectHandles` is only deployed on Ethereum mainnet, but it manages handles for Juicebox projects on all EVM-compatible networks.
+
 ### Text Record and Multichain
 
 The canonical ENS registry and the `JBProjectHandles` contract are only available on Ethereum mainnet, but Juicebox projects can be deployed on several EVM-compatible networks. To allow project owners to set their handles on multiple chains, the text record specifies both the chain ID and the project ID.
@@ -176,4 +183,14 @@ JBProjectHandles.setEnsNamePartsFor({
 });
 ```
 
-Now, clients associate his project with `project.jeff.eth`.
+Now, frontend clients will associate his project with `project.jeff.eth`. To read the handle, a client can call `handleOf(…)`:
+
+```solidity
+JBProjectHandles.handleOf({
+  chainId: 10,
+  projectId: 5,
+  projectOwner: 0x123… // jeff.eth
+});
+```
+
+This will return `project.jeff.eth` if the handle is verified, and an empty string otherwise.
