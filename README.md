@@ -158,13 +158,13 @@ To point an ENS name at a Juicebox project, use the name's `juicebox` text recor
 To point a Juicebox project at an ENS name, the project's owner must call [`JBProjectHandles.setEnsNamePartsFor(...)`](https://github.com/Bananapus/nana-project-handles/blob/main/src/JBProjectHandles.sol#L113):
 
 ```solidity
-/// @notice Associate an ENS name with a project.
-/// @dev ["jbx", "dao", "foo"] represents foo.dao.jbx.eth.
-/// @dev Only a project's owner can set its ENS name parts.
-/// @param chainId The chain ID of the network on which the project ID exists.
+/// @notice Point from a Juicebox project to an ENS node.
+/// @dev The `parts` ["jbx", "dao", "foo"] represents foo.dao.jbx.eth.
+/// @dev The project's owner must call this function to set its ENS name parts.
+/// @param chainId The chain ID of the network the project is on.
 /// @param projectId The ID of the project to set an ENS handle for.
 /// @param parts The parts of the ENS domain to use as the project handle, excluding the trailing .eth.
-function setEnsNamePartsFor(uint256 chainId, uint256 projectId, string[] memory parts) external override { ... }
+function setEnsNamePartsFor(uint256 chainId, uint256 projectId, string[] memory parts) external override { … }
 ```
 
 To point project #5 on Optimism mainnet back at his ENS, Jeff would have to call `JBProjectHandles.setEnsNamePartsFor(10, 5, ["jeff"])`. The same address which owns the project on Optimism must call `setEnsNamePartsFor(…)` on mainnet. If the project's owner changes, the new owner must call `setEnsNamePartsFor(…)` again.

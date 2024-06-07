@@ -9,7 +9,9 @@ import {ERC2771Context} from "@openzeppelin/contracts/metatx/ERC2771Context.sol"
 import {IJBProjects} from "@bananapus/core/src/interfaces/IJBProjects.sol";
 import {IJBProjectHandles} from "./interfaces/IJBProjectHandles.sol";
 
-/// @notice `JBProjectHandles` allows Juicebox project owners to associate their project with an ENS node. If that ENS node has a matching text record which points back to the project, clients will treat that ENS node as the project's handle.
+/// @notice `JBProjectHandles` allows Juicebox project owners to associate their project with an ENS node. If that ENS
+/// node has a matching text record which points back to the project, clients will treat that ENS node as the project's
+/// handle.
 /// @dev By convention, clients read the `juicebox` text field of the ENS node with the format `chainId:projectId`.
 /// For example, project ID #5 on Optimism mainnet would be represented by a `juicebox` text record of `10:5`.
 contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
@@ -46,7 +48,8 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
     /// @dev The `ensParts` ["jbx", "dao", "foo"] represents foo.dao.jbx.eth.
     /// @custom:param chainId The chain ID of the network the project is on.
     /// @custom:param projectId The ID of the project to get the ENS parts of.
-    /// @custom:param projectOwner The address of the project's owner. This is the address which called `setEnsNamePartsFor(...)`, and must be the project's current owner for the handle to be valid.
+    /// @custom:param projectOwner The address of the project's owner. This is the address which called
+    /// `setEnsNamePartsFor(...)`, and must be the project's current owner for the handle to be valid.
     mapping(uint256 chainId => mapping(uint256 projectId => mapping(address projectOwner => string[] ensParts))) private
         _ensNamePartsOf;
 
