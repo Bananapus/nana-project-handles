@@ -7,13 +7,18 @@ import "@bananapus/core/src/interfaces/IJBProjects.sol";
 interface IJBProjectHandles {
     event SetEnsNameParts(uint256 indexed projectId, string indexed handle, string[] parts, address caller);
 
-    function setEnsNamePartsFor(uint256 _projectId, string[] memory _parts) external;
+    function setEnsNamePartsFor(uint256 chainId, uint256 projectId, string[] memory parts) external;
 
-    function ensNamePartsOf(uint256 _projectId) external view returns (string[] memory);
+    function ensNamePartsOf(
+        uint256 chainId,
+        uint256 projectId,
+        address projectOwner
+    )
+        external
+        view
+        returns (string[] memory);
 
     function TEXT_KEY() external view returns (string memory);
 
-    function PROJECTS() external view returns (IJBProjects);
-
-    function handleOf(uint256 _projectId) external view returns (string memory);
+    function handleOf(uint256 chainId, uint256 projectId, address projectOwner) external view returns (string memory);
 }
