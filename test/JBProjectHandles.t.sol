@@ -34,7 +34,7 @@ contract ContractTest is Test {
 
         jbPermissions = new JBPermissions();
         jbProjects = new JBProjects(address(69));
-        projectHandle = new JBProjectHandles(jbProjects, address(0x0));
+        projectHandle = new JBProjectHandles(address(0x0));
     }
 
     //*********************************************************************//

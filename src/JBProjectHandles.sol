@@ -34,13 +34,6 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
     ENS public constant ENS_REGISTRY = ENS(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
 
     //*********************************************************************//
-    // --------------- public immutable stored properties ---------------- //
-    //*********************************************************************//
-
-    /// @notice A contract which mints ERC-721's that represent project ownership and transfers.
-    IJBProjects public immutable override PROJECTS;
-
-    //*********************************************************************//
     // --------------------- private stored properties ------------------- //
     //*********************************************************************//
 
@@ -48,10 +41,9 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
     /// @dev The `ensParts` ["jbx", "dao", "foo"] represents foo.dao.jbx.eth.
     /// @custom:param chainId The chain ID of the network the project is on.
     /// @custom:param projectId The ID of the project to get the ENS parts of.
-    /// @custom:param projectOwner The address of the project's owner. This is the address which called
-    /// `setEnsNamePartsFor(...)`, and must be the project's current owner for the handle to be valid.
-    mapping(uint256 chainId => mapping(uint256 projectId => mapping(address projectOwner => string[] ensParts))) private
-        _ensNamePartsOf;
+    /// @custom:param setter The address that set the requested `ensParts`. This should be the project's current owner.
+    mapping(uint256 chainId => mapping(uint256 projectId => mapping(address setter => string[] ensParts)))
+        private _ensNamePartsOf;
 
     //*********************************************************************//
     // ------------------------- external views -------------------------- //
@@ -61,20 +53,17 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
     /// @dev The ENS record text record with the `TEXT_KEY` record containing `chainId:projectId`.
     /// @param chainId The chain ID of the network the project is on.
     /// @param projectId The ID of the project to get the handle of.
-    /// @param projectOwner The address of the project's current owner.
+    /// @param setter The address which set the requested handle. This should be the project's current owner.
     /// @return handle The project's verified handle.
     function handleOf(
         uint256 chainId,
         uint256 projectId,
-        address projectOwner
-    )
-        external
-        view
-        override
-        returns (string memory)
-    {
+        address setter
+    ) external view override returns (string memory) {
         // Get a reference to the project's ENS name parts.
-        string[] memory ensNameParts = _ensNamePartsOf[chainId][projectId][projectOwner];
+        string[] memory ensNameParts = _ensNamePartsOf[chainId][projectId][
+            setter
+        ];
 
         // Return an empty string if not found.
         if (ensNameParts.length == 0) return "";
@@ -93,8 +82,16 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
 
         // Return empty string if text record from ENS name doesn't match `projectId` and `chainId`.
         if (
-            keccak256(bytes(textRecord))
-                != keccak256(bytes(string.concat(Strings.toString(chainId), ":", Strings.toString(projectId))))
+            keccak256(bytes(textRecord)) !=
+            keccak256(
+                bytes(
+                    string.concat(
+                        Strings.toString(chainId),
+                        ":",
+                        Strings.toString(projectId)
+                    )
+                )
+            )
         ) return "";
 
         // Format the handle from the name parts.
@@ -104,30 +101,22 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
     /// @notice The parts of the stored ENS name of a project.
     /// @param chainId The chain ID of the network on which the project ID exists.
     /// @param projectId The ID of the project to get the ENS name of.
-    /// @param projectOwner The address of the project's owner.
+    /// @param setter The address that set the requested record in this contract.
     /// @return The parts of the ENS name parts of a project.
     function ensNamePartsOf(
         uint256 chainId,
         uint256 projectId,
-        address projectOwner
-    )
-        external
-        view
-        override
-        returns (string[] memory)
-    {
-        return _ensNamePartsOf[chainId][projectId][projectOwner];
+        address setter
+    ) external view override returns (string[] memory) {
+        return _ensNamePartsOf[chainId][projectId][setter];
     }
 
     //*********************************************************************//
     // ---------------------------- constructor -------------------------- //
     //*********************************************************************//
 
-    /// @param projects A contract which mints ERC-721's that represent project ownership and transfers.
     /// @param trustedForwarder The trusted forwarder for the ERC2771Context.
-    constructor(IJBProjects projects, address trustedForwarder) ERC2771Context(trustedForwarder) {
-        PROJECTS = projects;
-    }
+    constructor(address trustedForwarder) ERC2771Context(trustedForwarder) {}
 
     //*********************************************************************//
     // --------------------- external transactions ----------------------- //
@@ -139,7 +128,11 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
     /// @param chainId The chain ID of the network the project is on.
     /// @param projectId The ID of the project to set an ENS handle for.
     /// @param parts The parts of the ENS domain to use as the project handle, excluding the trailing .eth.
-    function setEnsNamePartsFor(uint256 chainId, uint256 projectId, string[] memory parts) external override {
+    function setEnsNamePartsFor(
+        uint256 chainId,
+        uint256 projectId,
+        string[] memory parts
+    ) external override {
         // Get a reference to the number of parts are in the ENS name.
         uint256 partsLength = parts.length;
 
@@ -154,7 +147,12 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
         // Store the parts.
         _ensNamePartsOf[chainId][projectId][_msgSender()] = parts;
 
-        emit SetEnsNameParts(projectId, _formatHandle(parts), parts, _msgSender());
+        emit SetEnsNameParts(
+            projectId,
+            _formatHandle(parts),
+            parts,
+            _msgSender()
+        );
     }
 
     //*********************************************************************//
@@ -164,14 +162,18 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
     /// @notice Formats ENS name parts into a handle.
     /// @param ensNameParts The ENS name parts to format into a handle.
     /// @return handle The formatted ENS handle.
-    function _formatHandle(string[] memory ensNameParts) internal pure returns (string memory handle) {
+    function _formatHandle(
+        string[] memory ensNameParts
+    ) internal pure returns (string memory handle) {
         // Get a reference to the number of parts are in the ENS name.
         uint256 partsLength = ensNameParts.length;
 
         // Concatenate each name part.
         for (uint256 i = 1; i <= partsLength; i++) {
             // Compute the handle.
-            handle = string(abi.encodePacked(handle, ensNameParts[partsLength - i]));
+            handle = string(
+                abi.encodePacked(handle, ensNameParts[partsLength - i])
+            );
 
             // Add a dot if this part isn't the last.
             if (i < partsLength) handle = string(abi.encodePacked(handle, "."));
@@ -182,16 +184,25 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
     /// @dev See https://eips.ethereum.org/EIPS/eip-137.
     /// @param ensNameParts The parts of an ENS name to hash.
     /// @return namehash The namehash for an ENS name parts.
-    function _namehash(string[] memory ensNameParts) internal pure returns (bytes32 namehash) {
+    function _namehash(
+        string[] memory ensNameParts
+    ) internal pure returns (bytes32 namehash) {
         // Hash the trailing "eth" suffix.
-        namehash = keccak256(abi.encodePacked(namehash, keccak256(abi.encodePacked("eth"))));
+        namehash = keccak256(
+            abi.encodePacked(namehash, keccak256(abi.encodePacked("eth")))
+        );
 
         // Get a reference to the number of parts are in the ENS name.
         uint256 nameLength = ensNameParts.length;
 
         // Hash each part.
         for (uint256 i; i < nameLength; i++) {
-            namehash = keccak256(abi.encodePacked(namehash, keccak256(abi.encodePacked(ensNameParts[i]))));
+            namehash = keccak256(
+                abi.encodePacked(
+                    namehash,
+                    keccak256(abi.encodePacked(ensNameParts[i]))
+                )
+            );
         }
     }
 
@@ -208,7 +219,13 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
     }
 
     /// @dev ERC-2771 specifies the context as being a single address (20 bytes).
-    function _contextSuffixLength() internal view virtual override returns (uint256) {
+    function _contextSuffixLength()
+        internal
+        view
+        virtual
+        override
+        returns (uint256)
+    {
         return super._contextSuffixLength();
     }
 }

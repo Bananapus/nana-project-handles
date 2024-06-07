@@ -20,7 +20,5 @@ interface IJBProjectHandles {
 
     function TEXT_KEY() external view returns (string memory);
 
-    function PROJECTS() external view returns (IJBProjects);
-
     function handleOf(uint256 chainId, uint256 projectId, address projectOwner) external view returns (string memory);
 }
