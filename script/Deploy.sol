@@ -2,7 +2,6 @@
 pragma solidity ^0.8.16;
 
 import {Script, stdJson} from "forge-std/Script.sol";
-import {IJBPermissions} from "@bananapus/core/src/interfaces/IJBPermissions.sol";
 import {IJBProjects} from "@bananapus/core/src/interfaces/IJBProjects.sol";
 
 import "../src/JBProjectHandles.sol";
@@ -39,13 +38,8 @@ contract Deploy is Script {
             "JBProjects"
         );
 
-        address permissionsAddress = _getDeploymentAddress(
-            string.concat("node_modules/@bananapus/core/broadcast/Deploy.s.sol/", chain, "/run-latest.json"),
-            "JBPermissions"
-        );
-
         vm.broadcast();
-        new JBProjectHandles(IJBProjects(projectAddress), IJBPermissions(permissionsAddress));
+        new JBProjectHandles(address(0x0));
     }
 
     /// @notice Get the address of a contract that was deployed by the Deploy script.
