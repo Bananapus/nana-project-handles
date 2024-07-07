@@ -1,66 +1,60 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.16;
+pragma solidity ^0.8.23;
 
-import {Script, stdJson} from "forge-std/Script.sol";
-import {IJBProjects} from "@bananapus/core/src/interfaces/IJBProjects.sol";
+import {Sphinx} from "@sphinx-labs/contracts/SphinxPlugin.sol";
+import {Script} from "forge-std/Script.sol";
 
-import "../src/JBProjectHandles.sol";
+import {JBProjectHandles} from "../src/JBProjectHandles.sol";
 
-contract Deploy is Script {
-    function run() public {
-        uint256 chainId = block.chainid;
-        string memory chain;
+contract Deploy is Script, Sphinx {
+    /// @notice The address that is allowed to forward calls to the terminal and controller on a users behalf.
+    address private constant TRUSTED_FORWARDER =
+        0xB2b5841DBeF766d4b521221732F9B618fCf34A87;
 
-        // Ethereum Mainnet
-        if (chainId == 1) {
-            chain = "1";
-            // Ethereum Sepolia
-        } else if (chainId == 11_155_111) {
-            chain = "11155111";
-            // Optimism Mainnet
-        } else if (chainId == 420) {
-            chain = "420";
-            // Optimism Sepolia
-        } else if (chainId == 11_155_420) {
-            chain = "11155420";
-            // Polygon Mainnet
-        } else if (chainId == 137) {
-            chain = "137";
-            // Polygon Mumbai
-        } else if (chainId == 80_001) {
-            chain = "80001";
-        } else {
-            revert("Invalid RPC / no juice contracts deployed on this network");
-        }
+    /// @notice the salts that are used to deploy the contracts.
+    bytes32 PROJECT_HANDLES = "JBProjectHandles";
 
-        address projectAddress = _getDeploymentAddress(
-            string.concat("node_modules/@bananapus/core/broadcast/Deploy.s.sol/", chain, "/run-latest.json"),
-            "JBProjects"
-        );
-
-        vm.broadcast();
-        new JBProjectHandles(address(0x0));
+    function configureSphinx() public override {
+        // TODO: Update to contain revnet devs.
+        sphinxConfig.projectName = "project-handles-testnet";
+        sphinxConfig.mainnets = ["ethereum", "optimism", "base", "arbitrum"];
+        sphinxConfig.testnets = [
+            "ethereum_sepolia",
+            "optimism_sepolia",
+            "base_sepolia",
+            "arbitrum_sepolia"
+        ];
     }
 
-    /// @notice Get the address of a contract that was deployed by the Deploy script.
-    /// @dev Reverts if the contract was not found.
-    /// @param path The path to the deployment file.
-    /// @param contractName The name of the contract to get the address of.
-    /// @return The address of the contract.
-    function _getDeploymentAddress(string memory path, string memory contractName) internal view returns (address) {
-        string memory deploymentJson = vm.readFile(path);
-        uint256 nOfTransactions = stdJson.readStringArray(deploymentJson, ".transactions").length;
+    function run() public {
+        // Perform the deployment transactions.
+        deploy();
+    }
 
-        for (uint256 i = 0; i < nOfTransactions; i++) {
-            string memory currentKey = string.concat(".transactions", "[", Strings.toString(i), "]");
-            string memory currentContractName =
-                stdJson.readString(deploymentJson, string.concat(currentKey, ".contractName"));
+    function deploy() public sphinx {
+        // Check if the contracts are already deployed or if there are any changes.
+        if (
+            !_isDeployed(
+                PROJECT_HANDLES,
+                type(JBProjectHandles).creationCode,
+                abi.encode(TRUSTED_FORWARDER)
+            )
+        ) new JBProjectHandles{salt: PROJECT_HANDLES}(TRUSTED_FORWARDER);
+    }
 
-            if (keccak256(abi.encodePacked(currentContractName)) == keccak256(abi.encodePacked(contractName))) {
-                return stdJson.readAddress(deploymentJson, string.concat(currentKey, ".contractAddress"));
-            }
-        }
+    function _isDeployed(
+        bytes32 salt,
+        bytes memory creationCode,
+        bytes memory arguments
+    ) internal view returns (bool) {
+        address _deployedTo = vm.computeCreate2Address({
+            salt: salt,
+            initCodeHash: keccak256(abi.encodePacked(creationCode, arguments)),
+            // Arachnid/deterministic-deployment-proxy address.
+            deployer: address(0x4e59b44847b379578588920cA78FbF26c0B4956C)
+        });
 
-        revert(string.concat("Could not find contract with name '", contractName, "' in deployment file '", path, "'"));
+        // Return if code is already present at this address.
+        return address(_deployedTo).code.length != 0;
     }
 }

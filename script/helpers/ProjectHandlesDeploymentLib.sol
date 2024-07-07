@@ -40,7 +40,7 @@ library ProjectHandlesDeploymentLib {
     function getDeployment(
         string memory path,
         string memory network_name
-    ) internal view returns (RevnetCoreDeployment memory deployment) {
+    ) internal view returns (ProjectHandlesDeployment memory deployment) {
         deployment.project_handles = JBProjectHandles(
             _getDeploymentAddress(
                 path,
