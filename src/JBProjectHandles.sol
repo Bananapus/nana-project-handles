@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.23;
 
+import {IJBProjects} from "@bananapus/core/src/interfaces/IJBProjects.sol";
 import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
 import {IERC721} from "@openzeppelin/contracts/interfaces/IERC721.sol";
-import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {ERC2771Context} from "@openzeppelin/contracts/metatx/ERC2771Context.sol";
-import {IJBProjects} from "@bananapus/core/src/interfaces/IJBProjects.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+
 import {IJBProjectHandles} from "./interfaces/IJBProjectHandles.sol";
 
 /// @notice `JBProjectHandles` allows Juicebox project owners to associate their project with an ENS node. If that ENS
@@ -19,8 +20,8 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
     // --------------------------- custom errors ------------------------- //
     //*********************************************************************//
 
-    error EMPTY_NAME_PART();
-    error NO_PARTS();
+    error JBProjectHandles_EmptyNamePart();
+    error JBProjectHandles_NoParts();
 
     //*********************************************************************//
     // ---------------- public constant stored properties ---------------- //
@@ -31,7 +32,7 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
 
     /// @notice The ENS registry contract address.
     /// @dev Same on Ethereum mainnet and most of its testnets.
-    ENS public constant ENS_REGISTRY =
+    ENS public constant override ENS_REGISTRY =
         ENS(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
 
     //*********************************************************************//
@@ -49,6 +50,19 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
     //*********************************************************************//
     // ------------------------- external views -------------------------- //
     //*********************************************************************//
+
+    /// @notice The parts of the stored ENS name of a project.
+    /// @param chainId The chain ID of the network on which the project ID exists.
+    /// @param projectId The ID of the project to get the ENS name of.
+    /// @param setter The address that set the requested record in this contract.
+    /// @return The parts of the ENS name parts of a project.
+    function ensNamePartsOf(
+        uint256 chainId,
+        uint256 projectId,
+        address setter
+    ) external view override returns (string[] memory) {
+        return _ensNamePartsOf[chainId][projectId][setter];
+    }
 
     /// @notice Returns a project's verified handle. If the handle isn't verified, returns the empty string.
     /// @dev The ENS record text record with the `TEXT_KEY` record containing `chainId:projectId`.
@@ -102,66 +116,20 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
         return _formatHandle(ensNameParts);
     }
 
-    /// @notice The parts of the stored ENS name of a project.
-    /// @param chainId The chain ID of the network on which the project ID exists.
-    /// @param projectId The ID of the project to get the ENS name of.
-    /// @param setter The address that set the requested record in this contract.
-    /// @return The parts of the ENS name parts of a project.
-    function ensNamePartsOf(
-        uint256 chainId,
-        uint256 projectId,
-        address setter
-    ) external view override returns (string[] memory) {
-        return _ensNamePartsOf[chainId][projectId][setter];
+    //*********************************************************************//
+    // -------------------------- internal views ------------------------- //
+    //*********************************************************************//
+
+    /// @dev ERC-2771 specifies the context as being a single address (20 bytes).
+    function _contextSuffixLength()
+        internal
+        view
+        virtual
+        override
+        returns (uint256)
+    {
+        return super._contextSuffixLength();
     }
-
-    //*********************************************************************//
-    // ---------------------------- constructor -------------------------- //
-    //*********************************************************************//
-
-    /// @param trustedForwarder The trusted forwarder for the ERC2771Context.
-    constructor(address trustedForwarder) ERC2771Context(trustedForwarder) {}
-
-    //*********************************************************************//
-    // --------------------- external transactions ----------------------- //
-    //*********************************************************************//
-
-    /// @notice Point from a Juicebox project to an ENS node.
-    /// @dev The `parts` ["jbx", "dao", "foo"] represents foo.dao.jbx.eth.
-    /// @dev The project's owner must call this function to set its ENS name parts.
-    /// @param chainId The chain ID of the network the project is on.
-    /// @param projectId The ID of the project to set an ENS handle for.
-    /// @param parts The parts of the ENS domain to use as the project handle, excluding the trailing .eth.
-    function setEnsNamePartsFor(
-        uint256 chainId,
-        uint256 projectId,
-        string[] memory parts
-    ) external override {
-        // Get a reference to the number of parts are in the ENS name.
-        uint256 partsLength = parts.length;
-
-        // Make sure there are ens name parts.
-        if (partsLength == 0) revert NO_PARTS();
-
-        // Make sure no provided parts are empty.
-        for (uint256 i; i < partsLength; i++) {
-            if (bytes(parts[i]).length == 0) revert EMPTY_NAME_PART();
-        }
-
-        // Store the parts.
-        _ensNamePartsOf[chainId][projectId][_msgSender()] = parts;
-
-        emit SetEnsNameParts(
-            projectId,
-            _formatHandle(parts),
-            parts,
-            _msgSender()
-        );
-    }
-
-    //*********************************************************************//
-    // ------------------------ internal functions ----------------------- //
-    //*********************************************************************//
 
     /// @notice Formats ENS name parts into a handle.
     /// @param ensNameParts The ENS name parts to format into a handle.
@@ -223,14 +191,48 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
         return ERC2771Context._msgData();
     }
 
-    /// @dev ERC-2771 specifies the context as being a single address (20 bytes).
-    function _contextSuffixLength()
-        internal
-        view
-        virtual
-        override
-        returns (uint256)
-    {
-        return super._contextSuffixLength();
+    //*********************************************************************//
+    // ---------------------------- constructor -------------------------- //
+    //*********************************************************************//
+
+    /// @param trustedForwarder The trusted forwarder for the ERC2771Context.
+    constructor(address trustedForwarder) ERC2771Context(trustedForwarder) {}
+
+    //*********************************************************************//
+    // --------------------- external transactions ----------------------- //
+    //*********************************************************************//
+
+    /// @notice Point from a Juicebox project to an ENS node.
+    /// @dev The `parts` ["jbx", "dao", "foo"] represents foo.dao.jbx.eth.
+    /// @dev The project's owner must call this function to set its ENS name parts.
+    /// @param chainId The chain ID of the network the project is on.
+    /// @param projectId The ID of the project to set an ENS handle for.
+    /// @param parts The parts of the ENS domain to use as the project handle, excluding the trailing .eth.
+    function setEnsNamePartsFor(
+        uint256 chainId,
+        uint256 projectId,
+        string[] memory parts
+    ) external override {
+        // Get a reference to the number of parts are in the ENS name.
+        uint256 partsLength = parts.length;
+
+        // Make sure there are ens name parts.
+        if (partsLength == 0) revert JBProjectHandles_NoParts();
+
+        // Make sure no provided parts are empty.
+        for (uint256 i; i < partsLength; i++) {
+            if (bytes(parts[i]).length == 0)
+                revert JBProjectHandles_EmptyNamePart();
+        }
+
+        // Store the parts.
+        _ensNamePartsOf[chainId][projectId][_msgSender()] = parts;
+
+        emit SetEnsNameParts({
+            projectId: projectId,
+            handle: _formatHandle(parts),
+            parts: parts,
+            caller: _msgSender()
+        });
     }
 }
