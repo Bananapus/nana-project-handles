@@ -6,12 +6,7 @@ import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
 
 interface IJBProjectHandles {
-    event SetEnsNameParts(
-        uint256 indexed projectId,
-        string indexed handle,
-        string[] parts,
-        address caller
-    );
+    event SetEnsNameParts(uint256 indexed projectId, string indexed handle, string[] parts, address caller);
 
     function TEXT_KEY() external view returns (string memory);
     function ENS_REGISTRY() external view returns (ENS);
@@ -20,17 +15,12 @@ interface IJBProjectHandles {
         uint256 chainId,
         uint256 projectId,
         address projectOwner
-    ) external view returns (string[] memory);
+    )
+        external
+        view
+        returns (string[] memory);
 
-    function handleOf(
-        uint256 chainId,
-        uint256 projectId,
-        address projectOwner
-    ) external view returns (string memory);
+    function handleOf(uint256 chainId, uint256 projectId, address projectOwner) external view returns (string memory);
 
-    function setEnsNamePartsFor(
-        uint256 chainId,
-        uint256 projectId,
-        string[] memory parts
-    ) external;
+    function setEnsNamePartsFor(uint256 chainId, uint256 projectId, string[] memory parts) external;
 }
