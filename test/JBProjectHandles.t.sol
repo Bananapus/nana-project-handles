@@ -111,7 +111,7 @@ contract ContractTest is Test {
         nameParts[2] = name;
 
         vm.prank(projectOwner);
-        vm.expectRevert(abi.encodeWithSignature("EMPTY_NAME_PART()"));
+        vm.expectRevert(abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_EmptyNamePart.selector, nameParts));
         projectHandle.setEnsNamePartsFor(chainId, projectId, nameParts);
 
         // Control: ENS has correct name and domain
@@ -126,7 +126,7 @@ contract ContractTest is Test {
         string[] memory nameParts = new string[](0);
 
         vm.prank(projectOwner);
-        vm.expectRevert(abi.encodeWithSignature("NO_PARTS()"));
+        vm.expectRevert(JBProjectHandles.JBProjectHandles_NoParts.selector);
         projectHandle.setEnsNamePartsFor(chainId, projectId, nameParts);
 
         // Control: ENS has correct name and domain

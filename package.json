@@ -1,6 +1,6 @@
 {
   "name": "@bananapus/project-handles",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -19,9 +19,9 @@
     "deploy:optimism-sepolia": "source .env && forge script Deploy --chain-id 11155420 --rpc-url $RPC_OPTIMISM_SEPOLIA --broadcast --verify --etherscan-api-key $OPTIMISTIC_ETHERSCAN_API_KEY --interactives 1 --sender $SENDER_OPTIMISM_SEPOLIA -vvv"
   },
   "dependencies": {
-    "@bananapus/core": "^0.0.19",
+    "@bananapus/core": "^0.0.29",
     "@ensdomains/ens-contracts": "^1.1.4",
-    "@openzeppelin/contracts": "^5.0.1"
+    "@openzeppelin/contracts": "^5.0.2"
   },
   "devDependencies": {
     "@sphinx-labs/plugins": "^0.33.0"
