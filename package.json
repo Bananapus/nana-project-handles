@@ -23,6 +23,7 @@
     "@openzeppelin/contracts": "^5.0.2"
   },
   "devDependencies": {
+    "@bananapus/core": "^0.0.29",
     "@sphinx-labs/plugins": "^0.33.0"
   }
 }
