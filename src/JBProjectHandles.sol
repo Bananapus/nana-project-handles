@@ -3,10 +3,8 @@ pragma solidity 0.8.23;
 
 import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
-import {IERC721} from "@openzeppelin/contracts/interfaces/IERC721.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {ERC2771Context} from "@openzeppelin/contracts/metatx/ERC2771Context.sol";
-import {IJBProjects} from "@bananapus/core/src/interfaces/IJBProjects.sol";
 import {IJBProjectHandles} from "./interfaces/IJBProjectHandles.sol";
 
 /// @notice `JBProjectHandles` allows Juicebox project owners to associate their project with an ENS node. If that ENS

@@ -19,7 +19,6 @@
     "deploy:optimism-sepolia": "source .env && forge script Deploy --chain-id 11155420 --rpc-url $RPC_OPTIMISM_SEPOLIA --broadcast --verify --etherscan-api-key $OPTIMISTIC_ETHERSCAN_API_KEY --interactives 1 --sender $SENDER_OPTIMISM_SEPOLIA -vvv"
   },
   "dependencies": {
-    "@bananapus/core": "^0.0.19",
     "@ensdomains/ens-contracts": "^1.1.4",
     "@openzeppelin/contracts": "^5.0.1"
   },
