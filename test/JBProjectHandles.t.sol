@@ -7,10 +7,7 @@ import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol"; // Thi
 import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {JBProjects} from "@bananapus/core/src/JBProjects.sol";
-import {JBPermissions} from "@bananapus/core/src/JBPermissions.sol";
-import {JBPermissionsData} from "@bananapus/core/src/structs/JBPermissionsData.sol";
 import "../src/JBProjectHandles.sol";
-import {JBPermissionIds} from "@bananapus/permission-ids/src/JBPermissionIds.sol";
 
 ENS constant ensRegistry = ENS(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
 IJBProjectHandles constant oldHandle = IJBProjectHandles(0x41126eC99F8A989fEB503ac7bB4c5e5D40E06FA4);
@@ -22,7 +19,6 @@ contract ContractTest is Test {
     address projectOwner = address(6_942_069);
 
     ITextResolver ensTextResolver = ITextResolver(address(69_420)); // Mocked
-    JBPermissions jbPermissions;
     JBProjects jbProjects;
     JBProjectHandles projectHandle;
 
@@ -32,7 +28,6 @@ contract ContractTest is Test {
         vm.label(address(ensTextResolver), "ensTextResolver");
         vm.label(address(ensRegistry), "ensRegistry");
 
-        jbPermissions = new JBPermissions();
         jbProjects = new JBProjects(address(69), address(0));
         projectHandle = new JBProjectHandles(address(0x0));
     }
