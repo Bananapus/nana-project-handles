@@ -14,7 +14,7 @@ IJBProjectHandles constant oldHandle = IJBProjectHandles(0x41126eC99F8A989fEB503
 
 contract ContractTest is Test {
     // For testing the event emitted
-    event SetEnsNameParts(uint256 indexed projectId, string indexed ensName, string[] parts, address caller);
+    event SetEnsNameParts(uint256 indexed projectId, string ensName, string[] parts, address caller);
 
     address projectOwner = address(6_942_069);
 

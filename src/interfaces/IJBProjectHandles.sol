@@ -6,7 +6,7 @@ import {ENS} from "@ensdomains/ens-contracts/contracts/registry/ENS.sol";
 import {ITextResolver} from "@ensdomains/ens-contracts/contracts/resolvers/profiles/ITextResolver.sol";
 
 interface IJBProjectHandles {
-    event SetEnsNameParts(uint256 indexed projectId, string indexed handle, string[] parts, address caller);
+    event SetEnsNameParts(uint256 indexed projectId, string handle, string[] parts, address caller);
 
     function TEXT_KEY() external view returns (string memory);
     function ENS_REGISTRY() external view returns (ENS);
