@@ -45,12 +45,31 @@ contract ContractTest is Test {
         string[] memory nameParts = new string[](1);
         nameParts[0] = name;
 
-        // Test the event emitted
-        vm.expectEmit(true, true, true, true);
-        emit SetEnsNameParts(projectId, name, nameParts, projectOwner);
+        bool hasPeriod = false;
+
+        bytes memory nameBytes = bytes(name);
+        for (uint256 i = 0; i < nameBytes.length; i++) {
+            if (nameBytes[i] == ".") {
+                vm.expectRevert(
+                    abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, name)
+                );
+                hasPeriod = true;
+                break;
+            }
+        }
+
+        if (!hasPeriod) {
+            // Test the event emitted
+            vm.expectEmit(true, true, true, true);
+            emit SetEnsNameParts(projectId, name, nameParts, projectOwner);
+        }
 
         vm.prank(projectOwner);
         projectHandle.setEnsNamePartsFor(chainId, projectId, nameParts);
+
+        if (hasPeriod) {
+            return;
+        }
 
         // Control: correct ENS name?
         assertEq(projectHandle.ensNamePartsOf(chainId, projectId, projectOwner), nameParts);
@@ -76,12 +95,57 @@ contract ContractTest is Test {
 
         string memory fullName = string(abi.encodePacked(name, ".", subdomain, ".", subsubdomain));
 
-        // Test event
-        vm.expectEmit(true, true, true, true);
-        emit SetEnsNameParts(projectId, fullName, nameParts, projectOwner);
+        bool hasPeriod = false;
+        // Check if the domain contains a period
+        bytes memory nameBytes = bytes(subsubdomain);
+        for (uint256 i = 0; i < nameBytes.length; i++) {
+            if (nameBytes[i] == ".") {
+                vm.expectRevert(
+                    abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, subsubdomain)
+                );
+                hasPeriod = true;
+                break;
+            }
+        }
+
+        if (!hasPeriod) {
+            nameBytes = bytes(subdomain);
+            for (uint256 i = 0; i < nameBytes.length; i++) {
+                if (nameBytes[i] == ".") {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, subdomain)
+                    );
+                    hasPeriod = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasPeriod) {
+            nameBytes = bytes(name);
+            for (uint256 i = 0; i < nameBytes.length; i++) {
+                if (nameBytes[i] == ".") {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, name)
+                    );
+                    hasPeriod = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasPeriod) {
+            // Test event
+            vm.expectEmit(true, true, true, true);
+            emit SetEnsNameParts(projectId, fullName, nameParts, projectOwner);
+        }
 
         vm.prank(projectOwner);
         projectHandle.setEnsNamePartsFor(chainId, projectId, nameParts);
+
+        if (hasPeriod) {
+            return;
+        }
 
         // Control: ENS has correct name and domain
         assertEq(projectHandle.ensNamePartsOf(chainId, projectId, projectOwner), nameParts);
@@ -104,6 +168,22 @@ contract ContractTest is Test {
         nameParts[0] = subsubdomain;
         nameParts[1] = subdomain;
         nameParts[2] = name;
+
+        // Check if the domain contains a period
+        bytes memory nameBytes = bytes(subsubdomain);
+        for (uint256 i = 0; i < nameBytes.length; i++) {
+            vm.assume(nameBytes[i] != ".");
+        }
+
+        nameBytes = bytes(subdomain);
+        for (uint256 i = 0; i < nameBytes.length; i++) {
+            vm.assume(nameBytes[i] != ".");
+        }
+
+        nameBytes = bytes(name);
+        for (uint256 i = 0; i < nameBytes.length; i++) {
+            vm.assume(nameBytes[i] != ".");
+        }
 
         vm.prank(projectOwner);
         vm.expectRevert(abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_EmptyNamePart.selector, nameParts));
@@ -163,14 +243,51 @@ contract ContractTest is Test {
         nameParts[1] = subdomain;
         nameParts[2] = name;
 
-        // The name parts stored in the old contract
-        string[] memory oldNamePart = new string[](3);
-        oldNamePart[0] = "it hurts";
-        oldNamePart[1] = "so deprecated that";
-        oldNamePart[2] = "I am";
+        bool hasPeriod = false;
+        // Check if the domain contains a period
+        bytes memory nameBytes = bytes(subsubdomain);
+        for (uint256 i = 0; i < nameBytes.length; i++) {
+            if (nameBytes[i] == ".") {
+                vm.expectRevert(
+                    abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, subsubdomain)
+                );
+                hasPeriod = true;
+                break;
+            }
+        }
+
+        if (!hasPeriod) {
+            nameBytes = bytes(subdomain);
+            for (uint256 i = 0; i < nameBytes.length; i++) {
+                if (nameBytes[i] == ".") {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, subdomain)
+                    );
+                    hasPeriod = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasPeriod) {
+            nameBytes = bytes(name);
+            for (uint256 i = 0; i < nameBytes.length; i++) {
+                if (nameBytes[i] == ".") {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, name)
+                    );
+                    hasPeriod = true;
+                    break;
+                }
+            }
+        }
 
         vm.prank(projectOwner);
         projectHandle.setEnsNamePartsFor(chainId, projectId, nameParts);
+
+        if (hasPeriod) {
+            return;
+        }
 
         vm.mockCall(
             address(ensRegistry),
@@ -182,13 +299,6 @@ contract ContractTest is Test {
             address(ensTextResolver),
             abi.encodeWithSelector(ITextResolver.text.selector, _namehash(nameParts), KEY),
             abi.encode(string.concat(Strings.toString(chainId), ":", Strings.toString(projectId)))
-        );
-
-        // Mock the registration on the previous version
-        vm.mockCall(
-            address(oldHandle),
-            abi.encodeCall(IJBProjectHandles.ensNamePartsOf, (chainId, projectId, projectOwner)),
-            abi.encode(oldNamePart)
         );
 
         // Returns the handle from the latest version
@@ -294,8 +404,51 @@ contract ContractTest is Test {
         nameParts[1] = subdomain;
         nameParts[2] = name;
 
+        bool hasPeriod = false;
+        // Check if the domain contains a period
+        bytes memory nameBytes = bytes(subsubdomain);
+        for (uint256 i = 0; i < nameBytes.length; i++) {
+            if (nameBytes[i] == ".") {
+                vm.expectRevert(
+                    abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, subsubdomain)
+                );
+                hasPeriod = true;
+                break;
+            }
+        }
+
+        if (!hasPeriod) {
+            nameBytes = bytes(subdomain);
+            for (uint256 i = 0; i < nameBytes.length; i++) {
+                if (nameBytes[i] == ".") {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, subdomain)
+                    );
+                    hasPeriod = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasPeriod) {
+            nameBytes = bytes(name);
+            for (uint256 i = 0; i < nameBytes.length; i++) {
+                if (nameBytes[i] == ".") {
+                    vm.expectRevert(
+                        abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, name)
+                    );
+                    hasPeriod = true;
+                    break;
+                }
+            }
+        }
+
         vm.prank(projectOwner);
         projectHandle.setEnsNamePartsFor(chainId, projectId, nameParts);
+
+        if (hasPeriod) {
+            return;
+        }
 
         vm.mockCall(
             address(ensRegistry),

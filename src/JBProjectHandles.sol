@@ -19,6 +19,7 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
     //*********************************************************************//
 
     error JBProjectHandles_EmptyNamePart(string[] parts);
+    error JBProjectHandles_InvalidNamePart(string part);
     error JBProjectHandles_NoParts();
 
     //*********************************************************************//
@@ -192,8 +193,16 @@ contract JBProjectHandles is IJBProjectHandles, ERC2771Context {
 
         // Make sure no provided parts are empty.
         for (uint256 i; i < partsLength; i++) {
-            if (bytes(parts[i]).length == 0) {
+            string memory part = parts[i];
+            if (bytes(part).length == 0) {
                 revert JBProjectHandles_EmptyNamePart(parts);
+            }
+
+            // Make sure no provided parts contain a dot.
+            for (uint256 j; j < bytes(part).length; j++) {
+                if (bytes(part)[j] == ".") {
+                    revert JBProjectHandles_InvalidNamePart(part);
+                }
             }
         }
 
