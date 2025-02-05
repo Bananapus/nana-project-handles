@@ -10,11 +10,18 @@ import {JBProjects} from "@bananapus/core/src/JBProjects.sol";
 import "../src/JBProjectHandles.sol";
 
 ENS constant ensRegistry = ENS(0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e);
-IJBProjectHandles constant oldHandle = IJBProjectHandles(0x41126eC99F8A989fEB503ac7bB4c5e5D40E06FA4);
+IJBProjectHandles constant oldHandle = IJBProjectHandles(
+    0x41126eC99F8A989fEB503ac7bB4c5e5D40E06FA4
+);
 
 contract ContractTest is Test {
     // For testing the event emitted
-    event SetEnsNameParts(uint256 indexed projectId, string ensName, string[] parts, address caller);
+    event SetEnsNameParts(
+        uint256 indexed projectId,
+        string ensName,
+        string[] parts,
+        address caller
+    );
 
     address projectOwner = address(6_942_069);
 
@@ -36,7 +43,9 @@ contract ContractTest is Test {
     // ------------------------ SetEnsNamePartsFor(..) ------------------- //
     //*********************************************************************//
 
-    function testSetEnsNamePartsFor_passIfCallerIsProjectOwnerAndOnlyName(string calldata name) public {
+    function testSetEnsNamePartsFor_passIfCallerIsProjectOwnerAndOnlyName(
+        string calldata name
+    ) public {
         vm.assume(bytes(name).length != 0);
 
         uint256 projectId = jbProjects.createFor(projectOwner);
@@ -51,7 +60,12 @@ contract ContractTest is Test {
         for (uint256 i = 0; i < nameBytes.length; i++) {
             if (nameBytes[i] == ".") {
                 vm.expectRevert(
-                    abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, name)
+                    abi.encodeWithSelector(
+                        JBProjectHandles
+                            .JBProjectHandles_InvalidNamePart
+                            .selector,
+                        name
+                    )
                 );
                 hasPeriod = true;
                 break;
@@ -72,17 +86,22 @@ contract ContractTest is Test {
         }
 
         // Control: correct ENS name?
-        assertEq(projectHandle.ensNamePartsOf(chainId, projectId, projectOwner), nameParts);
+        assertEq(
+            projectHandle.ensNamePartsOf(chainId, projectId, projectOwner),
+            nameParts
+        );
     }
 
     function testSetEnsNameWithSubdomainFor_passIfMultipleSubdomainLevels(
         string memory name,
         string memory subdomain,
         string memory subsubdomain
-    )
-        public
-    {
-        vm.assume(bytes(name).length > 0 && bytes(subdomain).length > 0 && bytes(subsubdomain).length > 0);
+    ) public {
+        vm.assume(
+            bytes(name).length > 0 &&
+                bytes(subdomain).length > 0 &&
+                bytes(subsubdomain).length > 0
+        );
 
         uint256 projectId = jbProjects.createFor(projectOwner);
         uint256 chainId = 1;
@@ -93,7 +112,9 @@ contract ContractTest is Test {
         nameParts[1] = subdomain;
         nameParts[2] = name;
 
-        string memory fullName = string(abi.encodePacked(name, ".", subdomain, ".", subsubdomain));
+        string memory fullName = string(
+            abi.encodePacked(name, ".", subdomain, ".", subsubdomain)
+        );
 
         bool hasPeriod = false;
         // Check if the domain contains a period
@@ -101,7 +122,12 @@ contract ContractTest is Test {
         for (uint256 i = 0; i < nameBytes.length; i++) {
             if (nameBytes[i] == ".") {
                 vm.expectRevert(
-                    abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, subsubdomain)
+                    abi.encodeWithSelector(
+                        JBProjectHandles
+                            .JBProjectHandles_InvalidNamePart
+                            .selector,
+                        subsubdomain
+                    )
                 );
                 hasPeriod = true;
                 break;
@@ -113,7 +139,12 @@ contract ContractTest is Test {
             for (uint256 i = 0; i < nameBytes.length; i++) {
                 if (nameBytes[i] == ".") {
                     vm.expectRevert(
-                        abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, subdomain)
+                        abi.encodeWithSelector(
+                            JBProjectHandles
+                                .JBProjectHandles_InvalidNamePart
+                                .selector,
+                            subdomain
+                        )
                     );
                     hasPeriod = true;
                     break;
@@ -126,7 +157,12 @@ contract ContractTest is Test {
             for (uint256 i = 0; i < nameBytes.length; i++) {
                 if (nameBytes[i] == ".") {
                     vm.expectRevert(
-                        abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, name)
+                        abi.encodeWithSelector(
+                            JBProjectHandles
+                                .JBProjectHandles_InvalidNamePart
+                                .selector,
+                            name
+                        )
                     );
                     hasPeriod = true;
                     break;
@@ -148,17 +184,22 @@ contract ContractTest is Test {
         }
 
         // Control: ENS has correct name and domain
-        assertEq(projectHandle.ensNamePartsOf(chainId, projectId, projectOwner), nameParts);
+        assertEq(
+            projectHandle.ensNamePartsOf(chainId, projectId, projectOwner),
+            nameParts
+        );
     }
 
     function testSetEnsNameWithSubdomainFor_RevertIfEmptyElementInNameParts(
         string memory name,
         string memory subdomain,
         string memory subsubdomain
-    )
-        public
-    {
-        vm.assume(bytes(name).length == 0 || bytes(subdomain).length == 0 || bytes(subsubdomain).length == 0);
+    ) public {
+        vm.assume(
+            bytes(name).length == 0 ||
+                bytes(subdomain).length == 0 ||
+                bytes(subsubdomain).length == 0
+        );
 
         uint256 projectId = jbProjects.createFor(projectOwner);
         uint256 chainId = 1;
@@ -186,11 +227,19 @@ contract ContractTest is Test {
         }
 
         vm.prank(projectOwner);
-        vm.expectRevert(abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_EmptyNamePart.selector, nameParts));
+        vm.expectRevert(
+            abi.encodeWithSelector(
+                JBProjectHandles.JBProjectHandles_EmptyNamePart.selector,
+                nameParts
+            )
+        );
         projectHandle.setEnsNamePartsFor(chainId, projectId, nameParts);
 
         // Control: ENS has correct name and domain
-        assertEq(projectHandle.ensNamePartsOf(chainId, projectId, projectOwner), new string[](0));
+        assertEq(
+            projectHandle.ensNamePartsOf(chainId, projectId, projectOwner),
+            new string[](0)
+        );
     }
 
     function testSetEnsNameWithSubdomainFor_RevertIfEmptyNameParts() public {
@@ -205,32 +254,52 @@ contract ContractTest is Test {
         projectHandle.setEnsNamePartsFor(chainId, projectId, nameParts);
 
         // Control: ENS has correct name and domain
-        assertEq(projectHandle.ensNamePartsOf(chainId, projectId, projectOwner), new string[](0));
+        assertEq(
+            projectHandle.ensNamePartsOf(chainId, projectId, projectOwner),
+            new string[](0)
+        );
     }
 
     //*********************************************************************//
     // ---------------------------- handleOf(..) ------------------------- //
     //*********************************************************************//
 
-    function testHandleOf_returnsEmptyStringIfNoHandleSet(uint256 chainId, uint256 projectId) public {
+    function testHandleOf_returnsEmptyStringIfNoHandleSet(
+        uint256 chainId,
+        uint256 projectId
+    ) public {
         // No handle set on the previous JBProjectHandle version neither
         vm.mockCall(
             address(oldHandle),
-            abi.encodeCall(IJBProjectHandles.ensNamePartsOf, (chainId, projectId, projectOwner)),
+            abi.encodeCall(
+                IJBProjectHandles.ensNamePartsOf,
+                (chainId, projectId, projectOwner)
+            ),
             abi.encode(new string[](0))
         );
 
-        assertEq(projectHandle.handleOf(chainId, projectId, projectOwner), "");
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = chainId;
+
+        string[] memory emptyHandles = new string[](1);
+        emptyHandles[0] = "";
+
+        assertEq(
+            projectHandle.handlesOf(projectId, projectOwner, chainIds),
+            emptyHandles
+        );
     }
 
     function testHandleOf_returnsHandleFromNewestContractIfRegisteredOnBothOldAndNew(
         string calldata name,
         string calldata subdomain,
         string calldata subsubdomain
-    )
-        public
-    {
-        vm.assume(bytes(name).length > 0 && bytes(subdomain).length > 0 && bytes(subsubdomain).length > 0);
+    ) public {
+        vm.assume(
+            bytes(name).length > 0 &&
+                bytes(subdomain).length > 0 &&
+                bytes(subsubdomain).length > 0
+        );
 
         uint256 projectId = jbProjects.createFor(projectOwner);
         uint256 chainId = 1;
@@ -249,7 +318,12 @@ contract ContractTest is Test {
         for (uint256 i = 0; i < nameBytes.length; i++) {
             if (nameBytes[i] == ".") {
                 vm.expectRevert(
-                    abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, subsubdomain)
+                    abi.encodeWithSelector(
+                        JBProjectHandles
+                            .JBProjectHandles_InvalidNamePart
+                            .selector,
+                        subsubdomain
+                    )
                 );
                 hasPeriod = true;
                 break;
@@ -261,7 +335,12 @@ contract ContractTest is Test {
             for (uint256 i = 0; i < nameBytes.length; i++) {
                 if (nameBytes[i] == ".") {
                     vm.expectRevert(
-                        abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, subdomain)
+                        abi.encodeWithSelector(
+                            JBProjectHandles
+                                .JBProjectHandles_InvalidNamePart
+                                .selector,
+                            subdomain
+                        )
                     );
                     hasPeriod = true;
                     break;
@@ -274,7 +353,12 @@ contract ContractTest is Test {
             for (uint256 i = 0; i < nameBytes.length; i++) {
                 if (nameBytes[i] == ".") {
                     vm.expectRevert(
-                        abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, name)
+                        abi.encodeWithSelector(
+                            JBProjectHandles
+                                .JBProjectHandles_InvalidNamePart
+                                .selector,
+                            name
+                        )
                     );
                     hasPeriod = true;
                     break;
@@ -297,14 +381,32 @@ contract ContractTest is Test {
 
         vm.mockCall(
             address(ensTextResolver),
-            abi.encodeWithSelector(ITextResolver.text.selector, _namehash(nameParts), KEY),
-            abi.encode(string.concat(Strings.toString(chainId), ":", Strings.toString(projectId)))
+            abi.encodeWithSelector(
+                ITextResolver.text.selector,
+                _namehash(nameParts),
+                KEY
+            ),
+            abi.encode(
+                string.concat(
+                    Strings.toString(chainId),
+                    ":",
+                    Strings.toString(projectId)
+                )
+            )
+        );
+
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = chainId;
+
+        string[] memory handleResponse = new string[](1);
+        handleResponse[0] = string(
+            abi.encodePacked(name, ".", subdomain, ".", subsubdomain)
         );
 
         // Returns the handle from the latest version
         assertEq(
-            projectHandle.handleOf(chainId, projectId, projectOwner),
-            string(abi.encodePacked(name, ".", subdomain, ".", subsubdomain))
+            projectHandle.handlesOf(projectId, projectOwner, chainIds),
+            handleResponse
         );
     }
 
@@ -315,15 +417,16 @@ contract ContractTest is Test {
         string calldata name,
         string calldata subdomain,
         string calldata subsubdomain
-    )
-        public
-    {
+    ) public {
         vm.assume(projectId != reverseId);
 
         // No handle set on the previous JBProjectHandle version
         vm.mockCall(
             address(oldHandle),
-            abi.encodeCall(IJBProjectHandles.ensNamePartsOf, (chainId, projectId, projectOwner)),
+            abi.encodeCall(
+                IJBProjectHandles.ensNamePartsOf,
+                (chainId, projectId, projectOwner)
+            ),
             abi.encode(new string[](0))
         );
 
@@ -339,7 +442,16 @@ contract ContractTest is Test {
             abi.encode(address(0))
         );
 
-        assertEq(projectHandle.handleOf(chainId, projectId, projectOwner), "");
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = chainId;
+
+        string[] memory emptyHandles = new string[](1);
+        emptyHandles[0] = "";
+
+        assertEq(
+            projectHandle.handlesOf(projectId, projectOwner, chainIds),
+            emptyHandles
+        );
     }
 
     function testHandleOf_returnsEmptyStringIfReverseIdDoesNotMatchProjectId(
@@ -349,15 +461,16 @@ contract ContractTest is Test {
         string calldata name,
         string calldata subdomain,
         string calldata subsubdomain
-    )
-        public
-    {
+    ) public {
         vm.assume(projectId != reverseId);
 
         // No handle set on the previous JBProjectHandle version
         vm.mockCall(
             address(oldHandle),
-            abi.encodeCall(IJBProjectHandles.ensNamePartsOf, (chainId, projectId, projectOwner)),
+            abi.encodeCall(
+                IJBProjectHandles.ensNamePartsOf,
+                (chainId, projectId, projectOwner)
+            ),
             abi.encode(new string[](0))
         );
 
@@ -377,21 +490,36 @@ contract ContractTest is Test {
 
         vm.mockCall(
             address(ensTextResolver),
-            abi.encodeWithSelector(ITextResolver.text.selector, _namehash(nameParts), KEY),
+            abi.encodeWithSelector(
+                ITextResolver.text.selector,
+                _namehash(nameParts),
+                KEY
+            ),
             abi.encode(Strings.toString(reverseId))
         );
 
-        assertEq(projectHandle.handleOf(chainId, projectId, projectOwner), "");
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = chainId;
+
+        string[] memory emptyHandles = new string[](1);
+        emptyHandles[0] = "";
+
+        assertEq(
+            projectHandle.handlesOf(projectId, projectOwner, chainIds),
+            emptyHandles
+        );
     }
 
     function testHandleOf_returnsHandleIfReverseIdMatchProjectId(
         string calldata name,
         string calldata subdomain,
         string calldata subsubdomain
-    )
-        public
-    {
-        vm.assume(bytes(name).length > 0 && bytes(subdomain).length > 0 && bytes(subsubdomain).length > 0);
+    ) public {
+        vm.assume(
+            bytes(name).length > 0 &&
+                bytes(subdomain).length > 0 &&
+                bytes(subsubdomain).length > 0
+        );
 
         uint256 projectId = jbProjects.createFor(projectOwner);
         uint256 chainId = 1;
@@ -410,7 +538,12 @@ contract ContractTest is Test {
         for (uint256 i = 0; i < nameBytes.length; i++) {
             if (nameBytes[i] == ".") {
                 vm.expectRevert(
-                    abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, subsubdomain)
+                    abi.encodeWithSelector(
+                        JBProjectHandles
+                            .JBProjectHandles_InvalidNamePart
+                            .selector,
+                        subsubdomain
+                    )
                 );
                 hasPeriod = true;
                 break;
@@ -422,7 +555,12 @@ contract ContractTest is Test {
             for (uint256 i = 0; i < nameBytes.length; i++) {
                 if (nameBytes[i] == ".") {
                     vm.expectRevert(
-                        abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, subdomain)
+                        abi.encodeWithSelector(
+                            JBProjectHandles
+                                .JBProjectHandles_InvalidNamePart
+                                .selector,
+                            subdomain
+                        )
                     );
                     hasPeriod = true;
                     break;
@@ -435,7 +573,12 @@ contract ContractTest is Test {
             for (uint256 i = 0; i < nameBytes.length; i++) {
                 if (nameBytes[i] == ".") {
                     vm.expectRevert(
-                        abi.encodeWithSelector(JBProjectHandles.JBProjectHandles_InvalidNamePart.selector, name)
+                        abi.encodeWithSelector(
+                            JBProjectHandles
+                                .JBProjectHandles_InvalidNamePart
+                                .selector,
+                            name
+                        )
                     );
                     hasPeriod = true;
                     break;
@@ -458,13 +601,31 @@ contract ContractTest is Test {
 
         vm.mockCall(
             address(ensTextResolver),
-            abi.encodeWithSelector(ITextResolver.text.selector, _namehash(nameParts), KEY),
-            abi.encode(string.concat(Strings.toString(chainId), ":", Strings.toString(projectId)))
+            abi.encodeWithSelector(
+                ITextResolver.text.selector,
+                _namehash(nameParts),
+                KEY
+            ),
+            abi.encode(
+                string.concat(
+                    Strings.toString(chainId),
+                    ":",
+                    Strings.toString(projectId)
+                )
+            )
+        );
+
+        uint256[] memory chainIds = new uint256[](1);
+        chainIds[0] = chainId;
+
+        string[] memory handleResponse = new string[](1);
+        handleResponse[0] = string(
+            abi.encodePacked(name, ".", subdomain, ".", subsubdomain)
         );
 
         assertEq(
-            projectHandle.handleOf(chainId, projectId, projectOwner),
-            string(abi.encodePacked(name, ".", subdomain, ".", subsubdomain))
+            projectHandle.handlesOf(projectId, projectOwner, chainIds),
+            handleResponse
         );
     }
 
@@ -473,22 +634,34 @@ contract ContractTest is Test {
     //*********************************************************************//
 
     // Assert equals between two string arrays
-    function assertEq(string[] memory first, string[] memory second) internal {
+    function assertEq(
+        string[] memory first,
+        string[] memory second
+    ) internal pure override {
         assertEq(first.length, second.length);
         for (uint256 i; i < first.length; i++) {
             assertEq(keccak256(bytes(first[i])), keccak256(bytes(second[i])));
         }
     }
 
-    function _namehash(string[] memory ensName) internal pure returns (bytes32 namehash) {
-        namehash = keccak256(abi.encodePacked(namehash, keccak256(abi.encodePacked("eth"))));
+    function _namehash(
+        string[] memory ensName
+    ) internal pure returns (bytes32 namehash) {
+        namehash = keccak256(
+            abi.encodePacked(namehash, keccak256(abi.encodePacked("eth")))
+        );
 
         // Get a reference to the number of parts are in the ENS name.
         uint256 nameLength = ensName.length;
 
         // Hash each part.
         for (uint256 i = 0; i < nameLength; i++) {
-            namehash = keccak256(abi.encodePacked(namehash, keccak256(abi.encodePacked(ensName[i]))));
+            namehash = keccak256(
+                abi.encodePacked(
+                    namehash,
+                    keccak256(abi.encodePacked(ensName[i]))
+                )
+            );
         }
     }
 }
