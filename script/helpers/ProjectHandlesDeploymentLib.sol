@@ -43,7 +43,7 @@ library ProjectHandlesDeploymentLib {
         returns (ProjectHandlesDeployment memory deployment)
     {
         deployment.project_handles =
-            JBProjectHandles(_getDeploymentAddress(path, "project-handles-testnet", network_name, "JBProjectHandles"));
+            JBProjectHandles(_getDeploymentAddress(path, "nana-project-handles", network_name, "JBProjectHandles"));
     }
 
     /// @notice Get the address of a contract that was deployed by the Deploy script.
